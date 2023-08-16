@@ -34,7 +34,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowWebApp",
         builder =>
         {
-            builder.WithOrigins("https://localhost:7164/") // Replace with your web app's origin
+            builder.WithOrigins("https://novaapp-2023.azurewebsites.net") // Replace with your web app's origin
                    .AllowCredentials()
                    .AllowAnyHeader()
                    .AllowAnyMethod();
