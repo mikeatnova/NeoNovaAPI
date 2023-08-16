@@ -2,9 +2,13 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using NeoNovaAPI.Models.UserModels;
 using NeoNovaAPI.Services;
+using Newtonsoft.Json;
 using System.Data;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace NeoNovaAPI.Controllers
 {
@@ -13,13 +17,13 @@ namespace NeoNovaAPI.Controllers
     public class AuthController : ControllerBase
     {
         private readonly UserManager<IdentityUser> _userManager;
-        // private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly SignInManager<IdentityUser> _signInManager;
         private readonly JwtService _jwtService;
 
-        public AuthController(UserManager<IdentityUser> userManager, /*SignInManager<IdentityUser> signInManager,*/ JwtService jwtService)
+        public AuthController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, JwtService jwtService)
         {
             _userManager = userManager;
-            // _signInManager = signInManager;
+            _signInManager = signInManager;
             _jwtService = jwtService;
         }
 
@@ -46,13 +50,31 @@ namespace NeoNovaAPI.Controllers
             }
 
             var user = await _userManager.FindByNameAsync(model.Username);
-            if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
+            if (user != null)
             {
-                var token = _jwtService.GenerateToken(user);
-                return Ok(new { Token = token });
+                var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
+                if (result.Succeeded)
+                {
+                    // Sign in the user
+                    await _signInManager.SignInAsync(user, false);
+
+                    // Generate the JWT token
+                    var token = await _jwtService.GenerateToken(user);
+
+                    // Extract the user's name and roles from the token
+                    var handler = new JwtSecurityTokenHandler();
+                    var jwtToken = handler.ReadJwtToken(token);
+                    var userName = jwtToken.Claims.First(claim => claim.Type == JwtRegisteredClaimNames.UniqueName).Value;
+
+                    // Set the JWT in a cookie
+                    Response.Cookies.Append("MyCookieAuth", token, new CookieOptions { HttpOnly = true, Domain = "localhost", SameSite = SameSiteMode.None, Secure = true });
+
+                    return Ok(new { token = token }); // Return the JWT token in the response
+                }
             }
-            return Unauthorized();
+            return BadRequest("Invalid login attempt."); // Return a more descriptive error message
         }
+
 
         [Authorize(Roles = "Neo")]  // Only Neo can access this
         [HttpPost("create-user")]
@@ -76,5 +98,27 @@ namespace NeoNovaAPI.Controllers
             return Ok(new { Message = $"User {model.Username} with role {model.Role} created successfully." });
         }
 
+        [HttpPost("create-neo-user")]
+        public async Task<IActionResult> CreateNeoUser()
+        {
+            var user = new IdentityUser { UserName = "TheNeoUser", Email = "neo@user.com", EmailConfirmed = true };
+            var result = await _userManager.CreateAsync(user, "SecurePassword456!");
+
+            if (result.Succeeded)
+            {
+                // Assign the "Neo" role
+                await _userManager.AddToRoleAsync(user, "Neo");
+
+                return Ok(new { Message = "Neo user created successfully" });
+            }
+            return BadRequest(result.Errors);
+        }
+
+        [HttpGet("get-users")]
+        public async Task<IActionResult> GetUsers()
+        {
+            var users = await _userManager.Users.ToListAsync();
+            return Ok(users);
+        }
     }
 }

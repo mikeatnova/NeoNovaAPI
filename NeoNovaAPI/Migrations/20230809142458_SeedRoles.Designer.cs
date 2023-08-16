@@ -12,8 +12,8 @@ using NeoNovaAPI.Data;
 namespace NeoNovaAPI.Migrations
 {
     [DbContext(typeof(NeoNovaAPIDbContext))]
-    [Migration("20230807170841_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20230809142458_SeedRoles")]
+    partial class SeedRoles
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

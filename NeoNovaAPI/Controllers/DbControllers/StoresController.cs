@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NeoNovaAPI.Data;
 using NeoNovaAPI.Models.DbModels;
+using NeoNovaAPI.Services;
+using Newtonsoft.Json;
 
 namespace NeoNovaAPI.Controllers.DbControllers
 {
@@ -15,31 +17,43 @@ namespace NeoNovaAPI.Controllers.DbControllers
     public class StoresController : ControllerBase
     {
         private readonly NeoNovaAPIDbContext _context;
+        private readonly RedisService _redisService;
 
-        public StoresController(NeoNovaAPIDbContext context)
+        public StoresController(NeoNovaAPIDbContext context, RedisService redisService)
         {
             _context = context;
+            _redisService = redisService;
         }
 
         // GET: api/Stores
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Store>>> GetStores()
         {
-            if (_context.Stores == null)
+            string key = "stores";
+            string cachedStores = _redisService.GetString(key);
+
+            if (cachedStores != null)
             {
-                return NotFound();
+                return JsonConvert.DeserializeObject<List<Store>>(cachedStores);
             }
-            return await _context.Stores.ToListAsync();
+
+            var stores = await _context.Stores.ToListAsync();
+            _redisService.SetString(key, JsonConvert.SerializeObject(stores), TimeSpan.FromHours(1));
+
+            return stores;
         }
 
-        // GET: api/Stores/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Store>> GetStore(int id)
         {
-            if (_context.Stores == null)
+            string key = $"store:{id}";
+            string? cachedStore = _redisService.GetString(key); // Explicitly nullable
+
+            if (cachedStore != null)
             {
-                return NotFound();
+                return JsonConvert.DeserializeObject<Store>(cachedStore);
             }
+
             var store = await _context.Stores.FindAsync(id);
 
             if (store == null)
@@ -47,8 +61,11 @@ namespace NeoNovaAPI.Controllers.DbControllers
                 return NotFound();
             }
 
-            return store;
+            _redisService.SetString(key, JsonConvert.SerializeObject(store), TimeSpan.FromHours(1));
+
+            return store; // You've already checked for null
         }
+
 
         // PUT: api/Stores/5
         [HttpPut("{id}")]
@@ -77,6 +94,9 @@ namespace NeoNovaAPI.Controllers.DbControllers
                 }
             }
 
+            _redisService.DeleteKey("stores"); // Invalidate the cache
+            _redisService.DeleteKey($"store:{id}"); // Invalidate the specific cache entry
+
             return NoContent();
         }
 
@@ -84,12 +104,10 @@ namespace NeoNovaAPI.Controllers.DbControllers
         [HttpPost]
         public async Task<ActionResult<Store>> PostStore(Store store)
         {
-            if (_context.Stores == null)
-            {
-                return Problem("Entity set 'NeoNovaAPIDbContext.Stores'  is null.");
-            }
             _context.Stores.Add(store);
             await _context.SaveChangesAsync();
+
+            _redisService.DeleteKey("stores"); // Invalidate the cache
 
             return CreatedAtAction("GetStore", new { id = store.Id }, store);
         }
@@ -98,10 +116,6 @@ namespace NeoNovaAPI.Controllers.DbControllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteStore(int id)
         {
-            if (_context.Stores == null)
-            {
-                return NotFound();
-            }
             var store = await _context.Stores.FindAsync(id);
             if (store == null)
             {
@@ -110,6 +124,9 @@ namespace NeoNovaAPI.Controllers.DbControllers
 
             _context.Stores.Remove(store);
             await _context.SaveChangesAsync();
+
+            _redisService.DeleteKey("stores"); // Invalidate the cache
+            _redisService.DeleteKey($"store:{id}"); // Invalidate the specific cache entry
 
             return NoContent();
         }

@@ -9,45 +9,51 @@ namespace NeoNovaAPI.Services
     public class JwtService
     {
         private readonly IConfiguration _configuration;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public JwtService(IConfiguration configuration)
+
+        public JwtService(IConfiguration configuration, UserManager<IdentityUser> userManager)
         {
             _configuration = configuration;
+            _userManager = userManager;
         }
 
-        public string GenerateToken(IdentityUser user)
+        public async Task<string> GenerateToken(IdentityUser user)
         {
-            if (user == null || string.IsNullOrEmpty(user.UserName))
+            var userName = user?.UserName;
+            if (string.IsNullOrEmpty(userName))
             {
                 throw new ArgumentException("Invalid user or user name.");
             }
+            var roles = await _userManager.GetRolesAsync(user);
 
-            var jwtSettings = _configuration.GetSection("JwtSettings");
-            var jwtKey = jwtSettings["Key"];
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, userName),
+                new Claim(JwtRegisteredClaimNames.UniqueName, userName),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            };
+            claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+
+            var jwtKey = _configuration["Jwt:Key"];
             if (string.IsNullOrEmpty(jwtKey))
             {
                 throw new InvalidOperationException("JWT Key is missing from configuration.");
             }
+
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var claims = new[]
-            {
-        new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
-        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-        // ... you can add more claims if needed ...
-    };
-
             var token = new JwtSecurityToken(
-                issuer: jwtSettings["Issuer"],
-                audience: jwtSettings["Audience"],
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddHours(1), // Token validity. You can adjust this.
-                signingCredentials: creds
-            );
+                expires: DateTime.Now.AddMinutes(30),
+                signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
 
     }
 

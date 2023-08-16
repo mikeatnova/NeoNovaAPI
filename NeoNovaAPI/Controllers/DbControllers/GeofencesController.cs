@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NeoNovaAPI.Data;
 using NeoNovaAPI.Models.DbModels;
+using NeoNovaAPI.Services;
+using Newtonsoft.Json;
 
 namespace NeoNovaAPI.Controllers.DbControllers
 {
@@ -16,36 +18,54 @@ namespace NeoNovaAPI.Controllers.DbControllers
     {
         private readonly NeoNovaAPIDbContext _context;
 
-        public GeofencesController(NeoNovaAPIDbContext context)
+        private readonly RedisService _redisService;
+
+
+        public GeofencesController(NeoNovaAPIDbContext context, RedisService redisService)
         {
             _context = context;
+            _redisService = redisService;
+
         }
 
         // GET: api/Geofences
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Geofence>>> GetGeofences()
         {
-            if (_context.Geofences == null)
+            string key = "geofences";
+            string cachedGeofences = _redisService.GetString(key);
+
+            if (cachedGeofences != null)
             {
-                return NotFound();
+                return JsonConvert.DeserializeObject<List<Geofence>>(cachedGeofences);
             }
-            return await _context.Geofences.ToListAsync();
+
+            var geofences = await _context.Geofences.ToListAsync();
+            _redisService.SetString(key, JsonConvert.SerializeObject(geofences), TimeSpan.FromHours(1));
+
+            return geofences;
         }
 
         // GET: api/Geofences/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Geofence>> GetGeofence(int id)
         {
-            if (_context.Geofences == null)
+            string key = $"geofence:{id}";
+            string cachedGeofence = _redisService.GetString(key);
+
+            if (cachedGeofence != null)
             {
-                return NotFound();
+                return JsonConvert.DeserializeObject<Geofence>(cachedGeofence);
             }
+
             var geofence = await _context.Geofences.FindAsync(id);
 
             if (geofence == null)
             {
                 return NotFound();
             }
+
+            _redisService.SetString(key, JsonConvert.SerializeObject(geofence), TimeSpan.FromHours(1));
 
             return geofence;
         }
@@ -77,6 +97,9 @@ namespace NeoNovaAPI.Controllers.DbControllers
                 }
             }
 
+            _redisService.DeleteKey("geofences"); // Invalidate the cache
+            _redisService.DeleteKey($"geofence:{id}"); // Invalidate the specific cache entry
+
             return NoContent();
         }
 
@@ -84,24 +107,19 @@ namespace NeoNovaAPI.Controllers.DbControllers
         [HttpPost]
         public async Task<ActionResult<Geofence>> PostGeofence(Geofence geofence)
         {
-            if (_context.Geofences == null)
-            {
-                return Problem("Entity set 'NeoNovaAPIDbContext.Geofences'  is null.");
-            }
             _context.Geofences.Add(geofence);
             await _context.SaveChangesAsync();
 
+            _redisService.DeleteKey("geofences"); // Invalidate the cache
+
             return CreatedAtAction("GetGeofence", new { id = geofence.Id }, geofence);
         }
+
 
         // DELETE: api/Geofences/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteGeofence(int id)
         {
-            if (_context.Geofences == null)
-            {
-                return NotFound();
-            }
             var geofence = await _context.Geofences.FindAsync(id);
             if (geofence == null)
             {
@@ -110,6 +128,9 @@ namespace NeoNovaAPI.Controllers.DbControllers
 
             _context.Geofences.Remove(geofence);
             await _context.SaveChangesAsync();
+
+            _redisService.DeleteKey("geofences"); // Invalidate the cache
+            _redisService.DeleteKey($"geofence:{id}"); // Invalidate the specific cache entry
 
             return NoContent();
         }

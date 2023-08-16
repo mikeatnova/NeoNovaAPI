@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NeoNovaAPI.Data;
 using NeoNovaAPI.Models.DbModels;
+using NeoNovaAPI.Services;
+using Newtonsoft.Json;
 
 namespace NeoNovaAPI.Controllers.DbControllers
 {
@@ -15,37 +17,52 @@ namespace NeoNovaAPI.Controllers.DbControllers
     public class NovadecksController : ControllerBase
     {
         private readonly NeoNovaAPIDbContext _context;
+        private readonly RedisService _redisService;
 
-        public NovadecksController(NeoNovaAPIDbContext context)
+        public NovadecksController(NeoNovaAPIDbContext context, RedisService redisService)
         {
             _context = context;
+            _redisService = redisService;
         }
 
         // GET: api/Novadecks
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Novadeck>>> GetNovadecks()
         {
-            if (_context.Novadecks == null)
+            string key = "novadecks";
+            string cachedNovadecks = _redisService.GetString(key);
+
+            if (cachedNovadecks != null)
             {
-                return NotFound();
+                return JsonConvert.DeserializeObject<List<Novadeck>>(cachedNovadecks);
             }
-            return await _context.Novadecks.ToListAsync();
+
+            var novadecks = await _context.Novadecks.ToListAsync();
+            _redisService.SetString(key, JsonConvert.SerializeObject(novadecks), TimeSpan.FromHours(1));
+
+            return novadecks;
         }
 
         // GET: api/Novadecks/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Novadeck>> GetNovadeck(int id)
         {
-            if (_context.Novadecks == null)
+            string key = $"novadeck:{id}";
+            string cachedNovadeck = _redisService.GetString(key);
+
+            if (cachedNovadeck != null)
             {
-                return NotFound();
+                return JsonConvert.DeserializeObject<Novadeck>(cachedNovadeck);
             }
+
             var novadeck = await _context.Novadecks.FindAsync(id);
 
             if (novadeck == null)
             {
                 return NotFound();
             }
+
+            _redisService.SetString(key, JsonConvert.SerializeObject(novadeck), TimeSpan.FromHours(1));
 
             return novadeck;
         }
@@ -77,6 +94,9 @@ namespace NeoNovaAPI.Controllers.DbControllers
                 }
             }
 
+            _redisService.DeleteKey("novadecks"); // Invalidate the cache
+            _redisService.DeleteKey($"novadeck:{id}"); // Invalidate the specific cache entry
+
             return NoContent();
         }
 
@@ -84,12 +104,10 @@ namespace NeoNovaAPI.Controllers.DbControllers
         [HttpPost]
         public async Task<ActionResult<Novadeck>> PostNovadeck(Novadeck novadeck)
         {
-            if (_context.Novadecks == null)
-            {
-                return Problem("Entity set 'NeoNovaAPIDbContext.Novadecks'  is null.");
-            }
             _context.Novadecks.Add(novadeck);
             await _context.SaveChangesAsync();
+
+            _redisService.DeleteKey("novadecks"); // Invalidate the cache
 
             return CreatedAtAction("GetNovadeck", new { id = novadeck.Id }, novadeck);
         }
@@ -98,10 +116,6 @@ namespace NeoNovaAPI.Controllers.DbControllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteNovadeck(int id)
         {
-            if (_context.Novadecks == null)
-            {
-                return NotFound();
-            }
             var novadeck = await _context.Novadecks.FindAsync(id);
             if (novadeck == null)
             {
@@ -110,6 +124,9 @@ namespace NeoNovaAPI.Controllers.DbControllers
 
             _context.Novadecks.Remove(novadeck);
             await _context.SaveChangesAsync();
+
+            _redisService.DeleteKey("novadecks"); // Invalidate the cache
+            _redisService.DeleteKey($"novadeck:{id}"); // Invalidate the specific cache entry
 
             return NoContent();
         }

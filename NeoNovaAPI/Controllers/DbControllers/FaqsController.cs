@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NeoNovaAPI.Data;
 using NeoNovaAPI.Models.DbModels;
+using NeoNovaAPI.Services;
+using Newtonsoft.Json;
 
 namespace NeoNovaAPI.Controllers.DbControllers
 {
@@ -16,36 +18,55 @@ namespace NeoNovaAPI.Controllers.DbControllers
     {
         private readonly NeoNovaAPIDbContext _context;
 
-        public FaqsController(NeoNovaAPIDbContext context)
+        private readonly RedisService _redisService;
+
+        public FaqsController(NeoNovaAPIDbContext context, RedisService redisService)
         {
             _context = context;
+            _redisService = redisService;
         }
+
 
         // GET: api/Faqs
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Faq>>> GetFaqs()
         {
-            if (_context.Faqs == null)
+            string key = "faqs";
+            string cachedFaqs = _redisService.GetString(key);
+
+            if (cachedFaqs != null)
             {
-                return NotFound();
+
+                return JsonConvert.DeserializeObject<List<Faq>>(cachedFaqs);
             }
-            return await _context.Faqs.ToListAsync();
+
+            var faqs = await _context.Faqs.ToListAsync();
+            _redisService.SetString(key, JsonConvert.SerializeObject(faqs), TimeSpan.FromHours(1));
+
+            return faqs;
         }
+
 
         // GET: api/Faqs/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Faq>> GetFaq(int id)
         {
-            if (_context.Faqs == null)
+            string key = $"faq:{id}";
+            string cachedFaq = _redisService.GetString(key);
+
+            if (cachedFaq != null)
             {
-                return NotFound();
+                return JsonConvert.DeserializeObject<Faq>(cachedFaq);
             }
+
             var faq = await _context.Faqs.FindAsync(id);
 
             if (faq == null)
             {
                 return NotFound();
             }
+
+            _redisService.SetString(key, JsonConvert.SerializeObject(faq), TimeSpan.FromHours(1));
 
             return faq;
         }
@@ -77,6 +98,10 @@ namespace NeoNovaAPI.Controllers.DbControllers
                 }
             }
 
+            _redisService.DeleteKey("faqs"); // Invalidate the cache
+            _redisService.DeleteKey($"faq:{id}"); // Invalidate the specific cache entry
+
+
             return NoContent();
         }
 
@@ -90,6 +115,8 @@ namespace NeoNovaAPI.Controllers.DbControllers
             }
             _context.Faqs.Add(faq);
             await _context.SaveChangesAsync();
+
+            _redisService.DeleteKey("faqs"); // Invalidate the cache
 
             return CreatedAtAction("GetFaq", new { id = faq.Id }, faq);
         }
@@ -110,6 +137,10 @@ namespace NeoNovaAPI.Controllers.DbControllers
 
             _context.Faqs.Remove(faq);
             await _context.SaveChangesAsync();
+
+            _redisService.DeleteKey("faqs"); // Invalidate the cache
+            _redisService.DeleteKey($"faq:{id}"); // Invalidate the specific cache entry
+
 
             return NoContent();
         }

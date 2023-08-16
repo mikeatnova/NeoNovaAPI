@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NeoNovaAPI.Data;
 using NeoNovaAPI.Models.DbModels;
+using NeoNovaAPI.Services;
+using Newtonsoft.Json;
 
 namespace NeoNovaAPI.Controllers.DbControllers
 {
@@ -15,37 +17,52 @@ namespace NeoNovaAPI.Controllers.DbControllers
     public class StoreHoursController : ControllerBase
     {
         private readonly NeoNovaAPIDbContext _context;
+        private readonly RedisService _redisService;
 
-        public StoreHoursController(NeoNovaAPIDbContext context)
+        public StoreHoursController(NeoNovaAPIDbContext context, RedisService redisService)
         {
             _context = context;
+            _redisService = redisService;
         }
 
         // GET: api/StoreHours
         [HttpGet]
         public async Task<ActionResult<IEnumerable<StoreHour>>> GetStoreHours()
         {
-            if (_context.StoreHours == null)
+            string key = "storeHours";
+            string cachedStoreHours = _redisService.GetString(key);
+
+            if (cachedStoreHours != null)
             {
-                return NotFound();
+                return JsonConvert.DeserializeObject<List<StoreHour>>(cachedStoreHours);
             }
-            return await _context.StoreHours.ToListAsync();
+
+            var storeHours = await _context.StoreHours.ToListAsync();
+            _redisService.SetString(key, JsonConvert.SerializeObject(storeHours), TimeSpan.FromHours(1));
+
+            return storeHours;
         }
 
         // GET: api/StoreHours/5
         [HttpGet("{id}")]
         public async Task<ActionResult<StoreHour>> GetStoreHour(int id)
         {
-            if (_context.StoreHours == null)
+            string key = $"storeHour:{id}";
+            string cachedStoreHour = _redisService.GetString(key);
+
+            if (cachedStoreHour != null)
             {
-                return NotFound();
+                return JsonConvert.DeserializeObject<StoreHour>(cachedStoreHour);
             }
+
             var storeHour = await _context.StoreHours.FindAsync(id);
 
             if (storeHour == null)
             {
                 return NotFound();
             }
+
+            _redisService.SetString(key, JsonConvert.SerializeObject(storeHour), TimeSpan.FromHours(1));
 
             return storeHour;
         }
@@ -77,6 +94,9 @@ namespace NeoNovaAPI.Controllers.DbControllers
                 }
             }
 
+            _redisService.DeleteKey("storeHours"); // Invalidate the cache
+            _redisService.DeleteKey($"storeHour:{id}"); // Invalidate the specific cache entry
+
             return NoContent();
         }
 
@@ -84,12 +104,10 @@ namespace NeoNovaAPI.Controllers.DbControllers
         [HttpPost]
         public async Task<ActionResult<StoreHour>> PostStoreHour(StoreHour storeHour)
         {
-            if (_context.StoreHours == null)
-            {
-                return Problem("Entity set 'NeoNovaAPIDbContext.StoreHours'  is null.");
-            }
             _context.StoreHours.Add(storeHour);
             await _context.SaveChangesAsync();
+
+            _redisService.DeleteKey("storeHours"); // Invalidate the cache
 
             return CreatedAtAction("GetStoreHour", new { id = storeHour.Id }, storeHour);
         }
@@ -98,10 +116,6 @@ namespace NeoNovaAPI.Controllers.DbControllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteStoreHour(int id)
         {
-            if (_context.StoreHours == null)
-            {
-                return NotFound();
-            }
             var storeHour = await _context.StoreHours.FindAsync(id);
             if (storeHour == null)
             {
@@ -110,6 +124,9 @@ namespace NeoNovaAPI.Controllers.DbControllers
 
             _context.StoreHours.Remove(storeHour);
             await _context.SaveChangesAsync();
+
+            _redisService.DeleteKey("storeHours"); // Invalidate the cache
+            _redisService.DeleteKey($"storeHour:{id}"); // Invalidate the specific cache entry
 
             return NoContent();
         }
