@@ -77,7 +77,6 @@ namespace NeoNovaAPI.Controllers
             return BadRequest("Invalid login attempt."); // Return a more descriptive error message
         }
 
-
         [Authorize(Policy = "NeoOnly")]
         [HttpPost("create-neo-user")]
         public async Task<IActionResult> CreateNeoUser()
