@@ -67,7 +67,7 @@ namespace NeoNovaAPI.Controllers
                     var userName = jwtToken.Claims.First(claim => claim.Type == JwtRegisteredClaimNames.UniqueName).Value;
 
                     // Set the JWT in a cookie
-                    Response.Cookies.Append("MyCookieAuth", token, new CookieOptions { HttpOnly = true, Domain = "localhost", SameSite = SameSiteMode.None, Secure = true });
+                    Response.Cookies.Append("MyCookieAuth", token, new CookieOptions { HttpOnly = true, Secure = true });
 
                     return Ok(new { token = token }); // Return the JWT token in the response
                 }
@@ -98,6 +98,7 @@ namespace NeoNovaAPI.Controllers
             return Ok(new { Message = $"User {model.Username} with role {model.Role} created successfully." });
         }
 
+        [Authorize]
         [HttpPost("create-neo-user")]
         public async Task<IActionResult> CreateNeoUser()
         {
@@ -114,6 +115,7 @@ namespace NeoNovaAPI.Controllers
             return BadRequest(result.Errors);
         }
 
+        [Authorize]
         [HttpGet("get-users")]
         public async Task<IActionResult> GetUsers()
         {

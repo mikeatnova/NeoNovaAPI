@@ -20,7 +20,6 @@ if (builder.Environment.IsDevelopment())
 // Add services to the container.
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -34,7 +33,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowWebApp",
         builder =>
         {
-            builder.WithOrigins("https://novaapp-2023.azurewebsites.net") // Replace with your web app's origin
+            builder.WithOrigins("https://neonovaadmin.azurewebsites.net") // Replace with your web app's origin
                    .AllowCredentials()
                    .AllowAnyHeader()
                    .AllowAnyMethod();
