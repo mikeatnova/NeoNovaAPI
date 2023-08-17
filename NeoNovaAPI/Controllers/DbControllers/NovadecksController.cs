@@ -27,7 +27,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
         }
 
         // GET: api/Novadecks
-        [AllowAnonymous]
+        [Authorize(Policy = "AllUsers")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Novadeck>>> GetNovadecks()
         {
@@ -46,6 +46,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
         }
 
         // GET: api/Novadecks/5
+        [Authorize(Policy = "AdminOnly")]
         [HttpGet("{id}")]
         public async Task<ActionResult<Novadeck>> GetNovadeck(int id)
         {
@@ -70,6 +71,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
         }
 
         // PUT: api/Novadecks/5
+        [Authorize(Policy = "AdminOnly")]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutNovadeck(int id, Novadeck novadeck)
         {
@@ -103,6 +105,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
         }
 
         // POST: api/Novadecks
+        [Authorize(Policy = "AdminOnly")]
         [HttpPost]
         public async Task<ActionResult<Novadeck>> PostNovadeck(Novadeck novadeck)
         {
@@ -115,6 +118,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
         }
 
         // DELETE: api/Novadecks/5
+        [Authorize(Policy = "AdminOnly")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteNovadeck(int id)
         {

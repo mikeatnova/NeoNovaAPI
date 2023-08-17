@@ -78,28 +78,7 @@ namespace NeoNovaAPI.Controllers
         }
 
 
-        [HttpPost("create-user")]
-        public async Task<IActionResult> CreateUser(CreateUserModel model)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            if (model.Role != "Admin" && model.Role != "CommonUser")
-                return BadRequest("Invalid role specified.");
-
-            var user = new IdentityUser { UserName = model.Username, Email = model.Email };
-            var result = await _userManager.CreateAsync(user, model.Password);
-
-            if (!result.Succeeded)
-                return BadRequest(result.Errors);
-
-            // Assign the specified role to the user
-            await _userManager.AddToRoleAsync(user, model.Role);
-
-            return Ok(new { Message = $"User {model.Username} with role {model.Role} created successfully." });
-        }
-
-        [Authorize]
+        [Authorize(Policy = "NeoOnly")]
         [HttpPost("create-neo-user")]
         public async Task<IActionResult> CreateNeoUser()
         {
@@ -116,7 +95,41 @@ namespace NeoNovaAPI.Controllers
             return BadRequest(result.Errors);
         }
 
-        [Authorize]
+        [Authorize(Policy = "NeoOnly")]
+        [HttpPost("create-common-user")]
+        public async Task<IActionResult> CreateCommonUser()
+        {
+            var user = new IdentityUser { UserName = "TheCommonUser", Email = "common@user.com", EmailConfirmed = true };
+            var result = await _userManager.CreateAsync(user, "CommonUserCode123!");
+
+            if (result.Succeeded)
+            {
+                // Assign the "CommonUser" role
+                await _userManager.AddToRoleAsync(user, "CommonUser");
+
+                return Ok(new { Message = "Common user created successfully" });
+            }
+            return BadRequest(result.Errors);
+        }
+
+        [Authorize(Policy = "NeoOnly")]
+        [HttpPost("create-admin-user")]
+        public async Task<IActionResult> CreateAdminUser()
+        {
+            var user = new IdentityUser { UserName = "TheAdminUser", Email = "admin@user.com", EmailConfirmed = true };
+            var result = await _userManager.CreateAsync(user, "AdminCode789!");
+
+            if (result.Succeeded)
+            {
+                // Assign the "Admin" role
+                await _userManager.AddToRoleAsync(user, "Admin");
+
+                return Ok(new { Message = "Admin user created successfully" });
+            }
+            return BadRequest(result.Errors);
+        }
+
+        [Authorize(Policy = "AdminOnly")]
         [HttpGet("get-users")]
         public async Task<IActionResult> GetUsers()
         {

@@ -29,12 +29,15 @@ builder.Services.AddDefaultIdentity<IdentityUser>()
         .AddRoles<IdentityRole>()
         .AddEntityFrameworkStores<NeoNovaAPIDbContext>();
 
+
+var allowedOrigins = builder.Configuration["AllowedOrigins"] ?? throw new InvalidOperationException("Allowed origins is not configured.");
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowWebApp",
         builder =>
         {
-            builder.WithOrigins("https://neonovaadmin.azurewebsites.net") // Replace with your web app's origin
+            builder.WithOrigins(allowedOrigins)
                    .AllowCredentials()
                    .AllowAnyHeader()
                    .AllowAnyMethod();
@@ -52,7 +55,17 @@ builder.Services.AddAuthorization(options =>
     options.FallbackPolicy = new AuthorizationPolicyBuilder()
         .RequireAuthenticatedUser()
         .Build();
+
+    options.AddPolicy("AdminOnly", policy =>
+        policy.RequireRole("Neo", "Admin"));
+
+    options.AddPolicy("AllUsers", policy =>
+        policy.RequireRole("CommonUser", "Neo", "Admin"));
+
+    options.AddPolicy("NeoOnly", policy =>
+        policy.RequireRole("Neo"));
 });
+
 
 builder.Services.AddAuthentication(options =>
 {

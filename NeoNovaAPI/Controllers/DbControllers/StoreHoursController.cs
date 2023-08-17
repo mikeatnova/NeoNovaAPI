@@ -27,7 +27,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
         }
 
         // GET: api/StoreHours
-        [AllowAnonymous]
+        [Authorize(Policy = "AllUsers")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<StoreHour>>> GetStoreHours()
         {
@@ -46,6 +46,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
         }
 
         // GET: api/StoreHours/5
+        [Authorize(Policy = "AdminOnly")]
         [HttpGet("{id}")]
         public async Task<ActionResult<StoreHour>> GetStoreHour(int id)
         {
@@ -70,6 +71,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
         }
 
         // PUT: api/StoreHours/5
+        [Authorize(Policy = "AdminOnly")]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutStoreHour(int id, StoreHour storeHour)
         {
@@ -103,6 +105,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
         }
 
         // POST: api/StoreHours
+        [Authorize(Policy = "AdminOnly")]
         [HttpPost]
         public async Task<ActionResult<StoreHour>> PostStoreHour(StoreHour storeHour)
         {
@@ -115,6 +118,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
         }
 
         // DELETE: api/StoreHours/5
+        [Authorize(Policy = "AdminOnly")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteStoreHour(int id)
         {
