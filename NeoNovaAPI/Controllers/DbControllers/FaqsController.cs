@@ -29,7 +29,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
 
 
         // GET: api/Faqs
-        [AllowAnonymous]
+        [Authorize(Policy = "AllUsers")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Faq>>> GetFaqs()
         {
@@ -50,6 +50,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
 
 
         // GET: api/Faqs/5
+        [Authorize(Policy = "AdminOnly")]
         [HttpGet("{id}")]
         public async Task<ActionResult<Faq>> GetFaq(int id)
         {
@@ -74,6 +75,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
         }
 
         // PUT: api/Faqs/5
+        [Authorize(Policy = "AdminOnly")]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutFaq(int id, Faq faq)
         {
@@ -108,6 +110,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
         }
 
         // POST: api/Faqs
+        [Authorize(Policy = "AdminOnly")]
         [HttpPost]
         public async Task<ActionResult<Faq>> PostFaq(Faq faq)
         {
@@ -124,6 +127,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
         }
 
         // DELETE: api/Faqs/5
+        [Authorize(Policy = "AdminOnly")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteFaq(int id)
         {

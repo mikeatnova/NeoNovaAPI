@@ -27,7 +27,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
         }
 
         // GET: api/Stores
-        [AllowAnonymous]
+        [Authorize(Policy = "AllUsers")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Store>>> GetStores()
         {
@@ -46,6 +46,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<ActionResult<Store>> GetStore(int id)
         {
             string key = $"store:{id}";
@@ -70,6 +71,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
 
 
         // PUT: api/Stores/5
+        [Authorize(Policy = "AdminOnly")]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutStore(int id, Store store)
         {
@@ -103,6 +105,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
         }
 
         // POST: api/Stores
+        [Authorize(Policy = "AdminOnly")]
         [HttpPost]
         public async Task<ActionResult<Store>> PostStore(Store store)
         {
@@ -115,6 +118,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
         }
 
         // DELETE: api/Stores/5
+        [Authorize(Policy = "AdminOnly")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteStore(int id)
         {

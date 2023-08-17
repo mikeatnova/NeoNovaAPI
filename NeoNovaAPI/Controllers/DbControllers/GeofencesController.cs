@@ -30,7 +30,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
         }
 
         // GET: api/Geofences
-        [AllowAnonymous]
+        [Authorize(Policy = "AllUsers")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Geofence>>> GetGeofences()
         {
@@ -49,6 +49,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
         }
 
         // GET: api/Geofences/5
+        [Authorize(Policy = "AdminOnly")]
         [HttpGet("{id}")]
         public async Task<ActionResult<Geofence>> GetGeofence(int id)
         {
@@ -73,6 +74,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
         }
 
         // PUT: api/Geofences/5
+        [Authorize(Policy = "AdminOnly")]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutGeofence(int id, Geofence geofence)
         {
@@ -106,6 +108,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
         }
 
         // POST: api/Geofences
+        [Authorize(Policy = "AdminOnly")]
         [HttpPost]
         public async Task<ActionResult<Geofence>> PostGeofence(Geofence geofence)
         {
@@ -119,6 +122,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
 
 
         // DELETE: api/Geofences/5
+        [Authorize(Policy = "AdminOnly")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteGeofence(int id)
         {
