@@ -27,6 +27,7 @@ namespace NeoNovaAPI.Controllers
             _jwtService = jwtService;
         }
 
+        [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterModel model)
         {
@@ -41,6 +42,7 @@ namespace NeoNovaAPI.Controllers
             return BadRequest(result.Errors);
         }
 
+        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginModel model)
         {
@@ -76,7 +78,6 @@ namespace NeoNovaAPI.Controllers
         }
 
 
-        [Authorize(Roles = "Neo")]  // Only Neo can access this
         [HttpPost("create-user")]
         public async Task<IActionResult> CreateUser(CreateUserModel model)
         {

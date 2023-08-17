@@ -29,6 +29,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
 
 
         // GET: api/Faqs
+        [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Faq>>> GetFaqs()
         {

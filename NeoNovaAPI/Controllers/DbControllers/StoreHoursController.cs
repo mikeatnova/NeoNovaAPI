@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +27,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
         }
 
         // GET: api/StoreHours
+        [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<StoreHour>>> GetStoreHours()
         {
