@@ -40,7 +40,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
             }
 
             var stores = await _context.Stores.ToListAsync();
-            _redisService.SetString(key, JsonConvert.SerializeObject(stores), TimeSpan.FromHours(1));
+            _redisService.SetString(key, JsonConvert.SerializeObject(stores), TimeSpan.FromDays(7));
 
             return stores;
         }
@@ -64,7 +64,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
                 return NotFound();
             }
 
-            _redisService.SetString(key, JsonConvert.SerializeObject(store), TimeSpan.FromHours(1));
+            _redisService.SetString(key, JsonConvert.SerializeObject(store), TimeSpan.FromDays(7));
 
             return store; // You've already checked for null
         }

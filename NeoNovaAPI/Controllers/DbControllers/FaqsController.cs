@@ -43,7 +43,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
             }
 
             var faqs = await _context.Faqs.ToListAsync();
-            _redisService.SetString(key, JsonConvert.SerializeObject(faqs), TimeSpan.FromHours(1));
+            _redisService.SetString(key, JsonConvert.SerializeObject(faqs), TimeSpan.FromDays(7));
 
             return faqs;
         }
@@ -69,7 +69,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
                 return NotFound();
             }
 
-            _redisService.SetString(key, JsonConvert.SerializeObject(faq), TimeSpan.FromHours(1));
+            _redisService.SetString(key, JsonConvert.SerializeObject(faq), TimeSpan.FromDays(7));
 
             return faq;
         }

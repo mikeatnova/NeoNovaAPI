@@ -43,7 +43,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
             }
 
             var geofences = await _context.Geofences.ToListAsync();
-            _redisService.SetString(key, JsonConvert.SerializeObject(geofences), TimeSpan.FromHours(1));
+            _redisService.SetString(key, JsonConvert.SerializeObject(geofences), TimeSpan.FromDays(7));
 
             return geofences;
         }
@@ -68,7 +68,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
                 return NotFound();
             }
 
-            _redisService.SetString(key, JsonConvert.SerializeObject(geofence), TimeSpan.FromHours(1));
+            _redisService.SetString(key, JsonConvert.SerializeObject(geofence), TimeSpan.FromDays(7));
 
             return geofence;
         }

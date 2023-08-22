@@ -40,7 +40,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
             }
 
             var novadecks = await _context.Novadecks.ToListAsync();
-            _redisService.SetString(key, JsonConvert.SerializeObject(novadecks), TimeSpan.FromHours(1));
+            _redisService.SetString(key, JsonConvert.SerializeObject(novadecks), TimeSpan.FromDays(7));
 
             return novadecks;
         }
@@ -65,7 +65,7 @@ namespace NeoNovaAPI.Controllers.DbControllers
                 return NotFound();
             }
 
-            _redisService.SetString(key, JsonConvert.SerializeObject(novadeck), TimeSpan.FromHours(1));
+            _redisService.SetString(key, JsonConvert.SerializeObject(novadeck), TimeSpan.FromDays(7));
 
             return novadeck;
         }
