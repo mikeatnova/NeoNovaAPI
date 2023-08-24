@@ -66,7 +66,7 @@ namespace NeoNovaAPI.Controllers
                     // Extract the user's name and roles from the token
                     var handler = new JwtSecurityTokenHandler();
                     var jwtToken = handler.ReadJwtToken(token);
-                    var userName = jwtToken.Claims.First(claim => claim.Type == JwtRegisteredClaimNames.UniqueName).Value;
+                    var userId = jwtToken.Claims.First(claim => claim.Type == JwtRegisteredClaimNames.Sub).Value; // Using 'sub' for user ID
 
                     // Set the JWT in a cookie
                     Response.Cookies.Append("MyCookieAuth", token, new CookieOptions { HttpOnly = true, Secure = true });
