@@ -29,9 +29,9 @@ namespace NeoNovaAPI.Services
 
             var claims = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Sub, userName),
-                new Claim(JwtRegisteredClaimNames.UniqueName, userName),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id), // User ID
+                new Claim(ClaimTypes.Name, userName),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), // Unique Token ID
             };
             claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
