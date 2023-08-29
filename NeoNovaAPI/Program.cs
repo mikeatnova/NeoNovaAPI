@@ -25,7 +25,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Add Roles
-builder.Services.AddDefaultIdentity<IdentityUser>()
+builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+{
+    options.User.RequireUniqueEmail = true;
+})
         .AddRoles<IdentityRole>()
         .AddEntityFrameworkStores<NeoNovaAPIDbContext>();
 
