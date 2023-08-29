@@ -104,6 +104,27 @@ namespace NeoNovaAPI.Controllers
             return Ok(new { Message = "If the email address exists, a password reset token has been sent." });
         }
 
+        [AllowAnonymous]
+        [HttpPost("validate-reset-code")]
+        public async Task<IActionResult> ValidateAndSetNewPassword([FromBody] ResetPasswordModel model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                return BadRequest("User not found");
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, model.Code, model.NewPassword);
+
+            if (result.Succeeded)
+            {
+                return Ok(new { Message = "Password successfully reset" });
+            }
+            else
+            {
+                return BadRequest(result.Errors);
+            }
+        }
 
         [Authorize(Policy = "NeoOnly")]
         [HttpPost("create-neo-user")]
