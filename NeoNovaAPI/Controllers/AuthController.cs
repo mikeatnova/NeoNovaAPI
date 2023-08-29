@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NeoNovaAPI.Models.UserModels;
 using NeoNovaAPI.Services;
+using System.Net.Mail;
+using System.Net;
 using Newtonsoft.Json;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
@@ -19,12 +21,14 @@ namespace NeoNovaAPI.Controllers
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly JwtService _jwtService;
+        private readonly EmailService _emailService;
 
-        public AuthController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, JwtService jwtService)
+        public AuthController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, JwtService jwtService, EmailService emailService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _jwtService = jwtService;
+            _emailService = emailService;
         }
 
         [AllowAnonymous]
@@ -57,9 +61,6 @@ namespace NeoNovaAPI.Controllers
                 var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
                 if (result.Succeeded)
                 {
-                    // Sign in the user
-                    await _signInManager.SignInAsync(user, false);
-
                     // Generate the JWT token
                     var token = await _jwtService.GenerateToken(user);
 
@@ -76,6 +77,33 @@ namespace NeoNovaAPI.Controllers
             }
             return BadRequest("Invalid login attempt."); // Return a more descriptive error message
         }
+
+        [AllowAnonymous]
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordModel model)
+        {
+            if (string.IsNullOrEmpty(model.Email))
+            {
+                return BadRequest("Email is required.");
+            }
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                return Ok(new { Message = "If the email address exists, a password reset token has been sent." });
+            }
+
+            // Generate password reset token
+            var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            // Compose email with the resetToken
+            var subject = "Password Reset";
+            var body = $"Your password reset token is: {resetToken}";
+            await _emailService.SendEmailAsync(model.Email, subject, body);
+
+            return Ok(new { Message = "If the email address exists, a password reset token has been sent." });
+        }
+
 
         [Authorize(Policy = "NeoOnly")]
         [HttpPost("create-neo-user")]
