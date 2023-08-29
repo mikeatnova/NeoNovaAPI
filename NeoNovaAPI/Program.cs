@@ -85,6 +85,10 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.Configure<DataProtectionTokenProviderOptions>(opt =>
+    opt.TokenLifespan = TimeSpan.FromMinutes(15)); 
+
+
 
 // Add DbContext
 string connectionString = builder.Configuration.GetConnectionString("AzureSQLDb") ?? throw new InvalidOperationException("Could not find a connection string named 'AzureSQLDb'.");
@@ -97,6 +101,7 @@ builder.Services.AddSingleton(x => ConnectionMultiplexer.Connect(redisConnection
 
 builder.Services.AddTransient<RedisService>();
 builder.Services.AddTransient<JwtService>();
+builder.Services.AddSingleton<EmailService>();
 
 var app = builder.Build();
 
