@@ -15,8 +15,6 @@ namespace NeoNovaAPI.Models.WholesaleModels
 
         [Required]
         public string Username { get; set; }
-
-        [Required]
         public DateTime DateTimestamp { get; set; }
 
         [Required]
