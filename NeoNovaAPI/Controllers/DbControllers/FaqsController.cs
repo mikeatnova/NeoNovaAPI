@@ -18,7 +18,6 @@ namespace NeoNovaAPI.Controllers.DbControllers
     public class FaqsController : ControllerBase
     {
         private readonly NeoNovaAPIDbContext _context;
-
         private readonly RedisService _redisService;
 
         public FaqsController(NeoNovaAPIDbContext context, RedisService redisService)

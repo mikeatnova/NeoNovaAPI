@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using NeoNovaAPI.Models.DbModels;
+using NeoNovaAPI.Models.WholesaleModels;
 using System;
 
 namespace NeoNovaAPI.Data
@@ -14,7 +15,7 @@ namespace NeoNovaAPI.Data
         public DbSet<Faq> Faqs { get; set; } = default!;
         public DbSet<Geofence> Geofences { get; set; } = default!;
         public DbSet<Store> Stores { get; set; } = default!;
-        public DbSet<StoreHour> StoreHours { get; set; } = default!;
         public DbSet<Novadeck> Novadecks { get; set; } = default!;
+        public DbSet<WholesaleBugMessage> WholesaleBugMessages { get; set; } = default!;
     }
 }
