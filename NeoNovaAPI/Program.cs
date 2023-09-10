@@ -33,17 +33,20 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
         .AddEntityFrameworkStores<NeoNovaAPIDbContext>();
 
 
-var allowedOrigins = builder.Configuration["AllowedOrigins"] ?? throw new InvalidOperationException("Allowed origins is not configured.");
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowWebApp",
         builder =>
         {
-            builder.WithOrigins(allowedOrigins)
-                   .AllowCredentials()
-                   .AllowAnyHeader()
-                   .AllowAnyMethod();
+            builder.WithOrigins(
+                "https://localhost:7164",
+                "https://novawholesalema.com",
+                "http://localhost:4000",
+                "https://neonovaadmin.azurewebsites.net"
+            )
+            .AllowCredentials()
+            .AllowAnyHeader()
+            .AllowAnyMethod();
         });
 });
 

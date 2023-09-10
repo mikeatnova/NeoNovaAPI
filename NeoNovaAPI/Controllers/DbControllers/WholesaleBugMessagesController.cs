@@ -10,6 +10,7 @@ using NeoNovaAPI.Data;
 using NeoNovaAPI.Models.WholesaleModels;
 using NeoNovaAPI.Services;
 using Newtonsoft.Json;
+using StackExchange.Redis;
 
 namespace NeoNovaAPI.Controllers.DbControllers
 {
@@ -110,17 +111,37 @@ namespace NeoNovaAPI.Controllers.DbControllers
         [HttpPost]
         public async Task<ActionResult<WholesaleBugMessage>> PostWholesaleBugMessage(WholesaleBugMessage wholesaleBugMessage)
         {
-            if (_context.WholesaleBugMessages == null)
+            try
             {
-                return Problem("Entity set 'NeoNovaAPIDbContext.WholesaleBugMessages' is null.");
+                if (_context.WholesaleBugMessages == null)
+                {
+                    return Problem("Entity set 'NeoNovaAPIDbContext.WholesaleBugMessages' is null.");
+                }
+
+                _context.WholesaleBugMessages.Add(wholesaleBugMessage);
+                await _context.SaveChangesAsync();
+
+                _redisService.DeleteKey("wholesaleBugMessages"); // Invalidate the cache
+
+                return CreatedAtAction("GetWholesaleBugMessage", new { id = wholesaleBugMessage.Id }, wholesaleBugMessage);
             }
-            _context.WholesaleBugMessages.Add(wholesaleBugMessage);
-            await _context.SaveChangesAsync();
-
-            _redisService.DeleteKey("wholesaleBugMessages"); // Invalidate the cache
-
-            return CreatedAtAction("GetWholesaleBugMessage", new { id = wholesaleBugMessage.Id }, wholesaleBugMessage);
+            catch (DbUpdateException dbEx)
+            {
+                // Handle database-specific errors
+                return StatusCode(500, $"Database Error: {dbEx.Message}");
+            }
+            catch (RedisException redisEx)
+            {
+                // Handle Redis-specific errors
+                return StatusCode(500, $"Redis Error: {redisEx.Message}");
+            }
+            catch (Exception ex)
+            {
+                // General error handling
+                return StatusCode(500, $"An unexpected error occurred: {ex.Message}");
+            }
         }
+
 
         // DELETE: api/WholesaleBugMessages/5
         [Authorize(Policy = "AdminOnly")]
