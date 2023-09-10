@@ -17,5 +17,25 @@ namespace NeoNovaAPI.Data
         public DbSet<Store> Stores { get; set; } = default!;
         public DbSet<Novadeck> Novadecks { get; set; } = default!;
         public DbSet<WholesaleBugMessage> WholesaleBugMessages { get; set; } = default!;
+
+        public override int SaveChanges()
+        {
+            var entries = ChangeTracker
+                .Entries()
+                .Where(e => e.Entity is WholesaleBugMessage && (e.State == EntityState.Added || e.State == EntityState.Modified));
+
+            foreach (var entityEntry in entries)
+            {
+                if (entityEntry.State == EntityState.Added)
+                {
+                    ((WholesaleBugMessage)entityEntry.Entity).CreatedAt = DateTime.Now;
+                }
+
+                ((WholesaleBugMessage)entityEntry.Entity).ModifiedAt = DateTime.Now;
+            }
+
+            return base.SaveChanges();
+        }
+
     }
 }
