@@ -181,8 +181,24 @@ namespace NeoNovaAPI.Controllers
         [HttpGet("get-users")]
         public async Task<IActionResult> GetUsers()
         {
-            var users = await _userManager.Users.ToListAsync();
-            return Ok(users);
+            try
+            {
+                var users = await _userManager.Users.ToListAsync();
+
+                var userDTOs = users.Select(u => new
+                {
+                    u.Id,
+                    u.UserName,
+                    u.Email,
+                    Roles = _userManager.GetRolesAsync(u).Result  // Sync-over-async for simplification; consider using proper async handling
+                }).ToList();
+
+                return Ok(userDTOs);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex}");
+            }
         }
     }
 }
