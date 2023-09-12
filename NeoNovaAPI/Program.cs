@@ -108,6 +108,8 @@ builder.Services.AddSingleton(x => ConnectionMultiplexer.Connect(redisConnection
 builder.Services.AddTransient<RedisService>();
 builder.Services.AddTransient<JwtService>();
 builder.Services.AddSingleton<EmailService>();
+builder.Services.AddTransient<SeedUserGeneratorServices>();
+
 
 var app = builder.Build();
 

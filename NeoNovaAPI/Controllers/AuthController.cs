@@ -22,13 +22,16 @@ namespace NeoNovaAPI.Controllers
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly JwtService _jwtService;
         private readonly EmailService _emailService;
+        private readonly SeedUserGeneratorServices _seedUserGenerator;
 
-        public AuthController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, JwtService jwtService, EmailService emailService)
+
+        public AuthController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, JwtService jwtService, EmailService emailService, SeedUserGeneratorServices seedUserGenerator)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _jwtService = jwtService;
             _emailService = emailService;
+            _seedUserGenerator = seedUserGenerator;
         }
 
         [AllowAnonymous]
@@ -127,53 +130,34 @@ namespace NeoNovaAPI.Controllers
         }
 
         [Authorize(Policy = "NeoOnly")]
-        [HttpPost("create-neo-user")]
-        public async Task<IActionResult> CreateNeoUser()
+        [HttpPost("seed-new-user")]
+        public async Task<IActionResult> SeedNewUser([FromBody] SeedNewUserModel seedUser)
         {
-            var user = new IdentityUser { UserName = "TheNeoUser", Email = "neo@user.com", EmailConfirmed = true };
-            var result = await _userManager.CreateAsync(user, "SecurePassword456!");
+            string password = _seedUserGenerator.SeedPasswordGenerator(seedUser.Role);
+            string username = string.Empty;
+            IdentityResult result;
 
-            if (result.Succeeded)
+            do
             {
-                // Assign the "Neo" role
-                await _userManager.AddToRoleAsync(user, "Neo");
+                username = _seedUserGenerator.SeedUsernameGenerator(seedUser.Role);
 
-                return Ok(new { Message = "Neo user created successfully" });
-            }
-            return BadRequest(result.Errors);
-        }
+                var user = new IdentityUser
+                {
+                    UserName = username,
+                    Email = seedUser.Email,
+                    EmailConfirmed = true
+                };
 
-        [Authorize(Policy = "NeoOnly")]
-        [HttpPost("create-common-user")]
-        public async Task<IActionResult> CreateCommonUser()
-        {
-            var user = new IdentityUser { UserName = "TheCommonUser", Email = "common@user.com", EmailConfirmed = true };
-            var result = await _userManager.CreateAsync(user, "CommonUserCode123!");
+                result = await _userManager.CreateAsync(user, password);
 
-            if (result.Succeeded)
-            {
-                // Assign the "CommonUser" role
-                await _userManager.AddToRoleAsync(user, "CommonUser");
+                if (result.Succeeded)
+                {
+                    await _userManager.AddToRoleAsync(user, seedUser.Role);
+                    return Ok(new { Message = $"{seedUser.Role} user created successfully", GeneratedPassword = password });
+                }
 
-                return Ok(new { Message = "Common user created successfully" });
-            }
-            return BadRequest(result.Errors);
-        }
+            } while (result.Errors.Any(e => e.Code == "DuplicateUserName"));
 
-        [Authorize(Policy = "NeoOnly")]
-        [HttpPost("create-admin-user")]
-        public async Task<IActionResult> CreateAdminUser()
-        {
-            var user = new IdentityUser { UserName = "TheAdminUser", Email = "admin@user.com", EmailConfirmed = true };
-            var result = await _userManager.CreateAsync(user, "AdminCode789!");
-
-            if (result.Succeeded)
-            {
-                // Assign the "Admin" role
-                await _userManager.AddToRoleAsync(user, "Admin");
-
-                return Ok(new { Message = "Admin user created successfully" });
-            }
             return BadRequest(result.Errors);
         }
 
