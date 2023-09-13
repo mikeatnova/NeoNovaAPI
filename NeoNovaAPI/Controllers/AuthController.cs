@@ -133,7 +133,7 @@ namespace NeoNovaAPI.Controllers
         [HttpPost("seed-new-user")]
         public async Task<IActionResult> SeedNewUser([FromBody] SeedNewUserModel seedUser)
         {
-            string password = _seedUserGenerator.SeedPasswordGenerator(seedUser.Role);
+            string password = seedUser.Password; // Get the password from the request
             string username = string.Empty;
             IdentityResult result;
 
@@ -148,25 +148,20 @@ namespace NeoNovaAPI.Controllers
                     EmailConfirmed = true
                 };
 
-                result = await _userManager.CreateAsync(user, password);
+                result = await _userManager.CreateAsync(user, password); // Use the password from the request
 
                 if (result.Succeeded)
                 {
                     await _userManager.AddToRoleAsync(user, seedUser.Role);
-
-                    // Generate JWT Token with the password
-                    string passwordToken = await _jwtService.GeneratePasswordToken(password);
-
-                    // Add JWT Token to response headers
-                    Response.Headers.Add("Authorization", $"Bearer {passwordToken}");
-                    return Ok(new { Message = $"{seedUser.Role} user created successfully" });
+                    return Ok(new { Message = $"{seedUser.Role} user created successfully", Username = username });
                 }
 
-            }
-            while (result.Errors.Any(e => e.Code == "DuplicateUserName"));
+            } while (result.Errors.Any(e => e.Code == "DuplicateUserName"));
 
             return BadRequest(result.Errors);
         }
+
+
 
         [Authorize(Policy = "AdminOnly")]
         [HttpGet("get-users")]
