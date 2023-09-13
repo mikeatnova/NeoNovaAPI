@@ -129,7 +129,8 @@ namespace NeoNovaAPI.Controllers
             }
         }
 
-        [Authorize(Policy = "NeoOnly")]
+        [AllowAnonymous]
+        // [Authorize(Policy = "NeoOnly")]
         [HttpPost("seed-new-user")]
         public async Task<IActionResult> SeedNewUser([FromBody] SeedNewUserModel seedUser)
         {
@@ -153,11 +154,14 @@ namespace NeoNovaAPI.Controllers
                 if (result.Succeeded)
                 {
                     await _userManager.AddToRoleAsync(user, seedUser.Role);
+
+                    // Generate JWT Token with the password
+                    string passwordToken = await _jwtService.GeneratePasswordToken(password);
                     return Ok(new { Message = $"{seedUser.Role} user created successfully", GeneratedPassword = password });
                 }
 
-            } while (result.Errors.Any(e => e.Code == "DuplicateUserName"));
-
+            } 
+            while (result.Errors.Any(e => e.Code == "DuplicateUserName"));
             return BadRequest(result.Errors);
         }
 

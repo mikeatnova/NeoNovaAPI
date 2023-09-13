@@ -54,13 +54,13 @@ namespace NeoNovaAPI.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public async Task<string> GeneratePasswordToken(string generatedPassword)
+        public Task<string> GeneratePasswordToken(string generatedPassword)
         {
             var claims = new List<Claim>
-    {
-        new Claim("GeneratedPassword", generatedPassword),
-        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()) // Unique Token ID
-    };
+            {
+                new Claim("GeneratedPassword", generatedPassword),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()) // Unique Token ID
+            };
 
             var jwtPasswordKey = _configuration["PasswordJwt:PasswordKey"];
             if (string.IsNullOrEmpty(jwtPasswordKey))
@@ -77,7 +77,7 @@ namespace NeoNovaAPI.Services
                 expires: DateTime.Now.AddDays(7),
                 signingCredentials: creds);
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            return Task.FromResult(new JwtSecurityTokenHandler().WriteToken(token));
         }
     }
 }
