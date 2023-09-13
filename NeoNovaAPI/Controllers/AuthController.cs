@@ -129,8 +129,7 @@ namespace NeoNovaAPI.Controllers
             }
         }
 
-        [AllowAnonymous]
-        // [Authorize(Policy = "NeoOnly")]
+        [Authorize(Policy = "NeoOnly")]
         [HttpPost("seed-new-user")]
         public async Task<IActionResult> SeedNewUser([FromBody] SeedNewUserModel seedUser)
         {
