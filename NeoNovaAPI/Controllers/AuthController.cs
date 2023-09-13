@@ -156,11 +156,15 @@ namespace NeoNovaAPI.Controllers
 
                     // Generate JWT Token with the password
                     string passwordToken = await _jwtService.GeneratePasswordToken(password);
-                    return Ok(new { Message = $"{seedUser.Role} user created successfully", GeneratedPassword = password });
+
+                    // Add JWT Token to response headers
+                    Response.Headers.Add("Authorization", $"Bearer {passwordToken}");
+                    return Ok(new { Message = $"{seedUser.Role} user created successfully" });
                 }
 
-            } 
+            }
             while (result.Errors.Any(e => e.Code == "DuplicateUserName"));
+
             return BadRequest(result.Errors);
         }
 
