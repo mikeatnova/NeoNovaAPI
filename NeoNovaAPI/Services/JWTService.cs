@@ -54,7 +54,30 @@ namespace NeoNovaAPI.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
+        public async Task<string> GeneratePasswordToken(string generatedPassword)
+        {
+            var claims = new List<Claim>
+    {
+        new Claim("GeneratedPassword", generatedPassword),
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()) // Unique Token ID
+    };
 
+            var jwtPasswordKey = _configuration["PasswordJwt:PasswordKey"];
+            if (string.IsNullOrEmpty(jwtPasswordKey))
+            {
+                throw new InvalidOperationException("JWT Password Key is missing from configuration.");
+            }
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtPasswordKey));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: _configuration["PasswordJwt:Issuer"],
+                audience: _configuration["PasswordJwt:Audience"],
+                claims: claims,
+                expires: DateTime.Now.AddDays(7),
+                signingCredentials: creds);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
     }
-
 }
