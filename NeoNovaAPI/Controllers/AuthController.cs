@@ -161,8 +161,6 @@ namespace NeoNovaAPI.Controllers
             return BadRequest(result.Errors);
         }
 
-
-
         [Authorize(Policy = "AdminOnly")]
         [HttpGet("get-users")]
         public async Task<IActionResult> GetUsers()
@@ -185,6 +183,92 @@ namespace NeoNovaAPI.Controllers
             {
                 return StatusCode(500, $"Internal server error: {ex}");
             }
+        }
+
+        [Authorize(Policy = "AdminOnly")]
+        [HttpDelete("delete-user/{id}")]
+        public async Task<IActionResult> DeleteUser([FromRoute] string id)
+        {
+            try
+            {
+                // Find the user by ID
+                var user = await _userManager.FindByIdAsync(id);
+                if (user == null)
+                {
+                    return BadRequest("User not found.");
+                }
+
+                // Delete the user
+                var result = await _userManager.DeleteAsync(user);
+                if (result.Succeeded)
+                {
+                    return Ok("User deleted successfully.");
+                }
+                else
+                {
+                    return BadRequest($"Failed to delete user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex}");
+            }
+        }
+
+
+        [Authorize(Policy = "AdminOnly")]
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetUserPassword([FromBody] ChangeUserPasswordModel model)
+        {
+            var user = await _userManager.FindByIdAsync(model.UserId);
+            if (user == null)
+            {
+                return BadRequest("User not found");
+            }
+
+            // Generate a new password reset token
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await _userManager.ResetPasswordAsync(user, token, model.NewPassword);
+
+            if (result.Succeeded)
+            {
+                return Ok(new { Message = "Password reset successfully." });
+            }
+            return BadRequest(result.Errors);
+        }
+
+        [Authorize(Policy = "AdminOnly")]
+        [HttpPost("reset-username")]
+        public async Task<IActionResult> ResetUserUsername([FromBody] ChangeUserUsernameModel model)
+        {
+            var user = await _userManager.FindByIdAsync(model.UserId);
+            if (user == null)
+            {
+                return BadRequest("User not found");
+            }
+            user.UserName = model.NewUsername;
+            var result = await _userManager.UpdateAsync(user);
+
+            if (result.Succeeded)
+            {
+                return Ok(new { Message = "Username updated successfully." });
+            }
+            return BadRequest(result.Errors);
+        }
+
+        [Authorize(Policy = "AdminOnly")]
+        [HttpPost("{id}/validate-password")]
+        public async Task<IActionResult> ValidatePassword([FromRoute] string id, [FromBody] ValidatePasswordModel model)
+        {
+            // Since user ID is coming from the route, make sure it matches the one in the body
+            if (id != model.UserId) return BadRequest("Mismatched user IDs");
+
+            var user = await _userManager.FindByIdAsync(model.UserId);
+            if (user == null) return BadRequest("User not found");
+
+            var isCurrentPasswordValid = await _userManager.CheckPasswordAsync(user, model.Password);
+
+            return Ok(new { IsValid = isCurrentPasswordValid });
         }
     }
 }
