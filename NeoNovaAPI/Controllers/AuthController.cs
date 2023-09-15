@@ -251,7 +251,8 @@ namespace NeoNovaAPI.Controllers
 
             if (result.Succeeded)
             {
-                return Ok(new { Message = "Username updated successfully." });
+                string newToken = await _jwtService.GenerateToken(user);
+                return Ok(new {Token = newToken });
             }
             return BadRequest(result.Errors);
         }
