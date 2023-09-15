@@ -16,7 +16,7 @@ namespace NeoNovaAPI.Services
 
         public string SeedPasswordGenerator(string role)
         {
-            int remainingChars = 16 - role.Length - 4; // Subtract 4 to save spots for each type of character
+            int remainingChars = 20 - role.Length - 4; // Subtract 4 to save spots for each type of character
 
             // Randomly generate one uppercase letter, one lowercase letter, and one special character
             char upperCaseLetter = (char)_random.Next('A', 'Z' + 1);
@@ -44,7 +44,7 @@ namespace NeoNovaAPI.Services
 
         public string SeedUsernameGenerator(string role)
         {
-            return $"{role}Agent{_random.Next(008, 999)}";
+            return $"{role}Agent{_random.Next(000001, 999999)}";
         }
     }
 }
