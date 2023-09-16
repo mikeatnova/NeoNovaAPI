@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using NeoNovaAPI.Data;
 
 namespace NeoNovaAPI.Controllers
 {
@@ -23,15 +24,17 @@ namespace NeoNovaAPI.Controllers
         private readonly JwtService _jwtService;
         private readonly EmailService _emailService;
         private readonly SeedUserGeneratorServices _seedUserGenerator;
+        private readonly NeoNovaAPIDbContext _context;
 
 
-        public AuthController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, JwtService jwtService, EmailService emailService, SeedUserGeneratorServices seedUserGenerator)
+        public AuthController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, JwtService jwtService, EmailService emailService, SeedUserGeneratorServices seedUserGenerator, NeoNovaAPIDbContext context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _jwtService = jwtService;
             _emailService = emailService;
             _seedUserGenerator = seedUserGenerator;
+            _context = context;
         }
 
         [AllowAnonymous]
@@ -137,6 +140,8 @@ namespace NeoNovaAPI.Controllers
             string username = string.Empty;
             IdentityResult result;
 
+            bool isSecurityRole = (seedUser.Role == "SecurityOfficer" || seedUser.Role == "SecurityManager" || seedUser.Role == "SecuritySupervisor" || seedUser.Role == "SecurityChief");
+
             do
             {
                 username = _seedUserGenerator.SeedUsernameGenerator(seedUser.Role);
@@ -153,6 +158,19 @@ namespace NeoNovaAPI.Controllers
                 if (result.Succeeded)
                 {
                     await _userManager.AddToRoleAsync(user, seedUser.Role);
+
+                    if (isSecurityRole)
+                    {
+                        var securityUser = new SecurityUser
+                        {
+                            IdentityUserId = user.Id,
+                            IsActive = true,
+                            CreatedAt = DateTime.UtcNow,
+                            ModifiedAt = DateTime.UtcNow
+                        };
+                        _context.SecurityUsers.Add(securityUser);
+                        await _context.SaveChangesAsync();
+                    };
                     return Ok(new { Message = $"{seedUser.Role} user created successfully", Username = username });
                 }
 
@@ -198,23 +216,28 @@ namespace NeoNovaAPI.Controllers
                     return BadRequest("User not found.");
                 }
 
-                // Delete the user
-                var result = await _userManager.DeleteAsync(user);
-                if (result.Succeeded)
+                // Delete the associated SecurityUser, if it exists
+                var securityUser = await _context.SecurityUsers.SingleOrDefaultAsync(s => s.IdentityUserId == id);
+                if (securityUser != null)
                 {
-                    return Ok("User deleted successfully.");
+                    _context.SecurityUsers.Remove(securityUser);
+                    await _context.SaveChangesAsync();
                 }
-                else
+
+                // Delete the AspNetUser
+                var identityDeleteResult = await _userManager.DeleteAsync(user);
+                if (!identityDeleteResult.Succeeded)
                 {
-                    return BadRequest($"Failed to delete user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                    return BadRequest($"Failed to delete AspNetUser: {string.Join(", ", identityDeleteResult.Errors.Select(e => e.Description))}");
                 }
+
+                return Ok("User and associated SecurityUser deleted successfully.");
             }
             catch (Exception ex)
             {
                 return StatusCode(500, $"Internal server error: {ex}");
             }
         }
-
 
         [Authorize(Policy = "AdminOnly")]
         [HttpPost("reset-password")]

@@ -11,11 +11,9 @@ namespace NeoNovaAPI.Models.UserModels
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ID { get; set; }
 
-        [Required]
         [MaxLength(50)]
         public string FirstName { get; set; }
 
-        [Required]
         [MaxLength(50)]
         public string LastName { get; set; }
 
@@ -27,6 +25,7 @@ namespace NeoNovaAPI.Models.UserModels
 
         [Required]
         public DateTime ModifiedAt { get; set; }
+        public DateTime DeletedAt { get; set; }
 
         public DateTime? HiredDate { get; set; }
 

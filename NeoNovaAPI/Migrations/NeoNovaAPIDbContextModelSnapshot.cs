@@ -17,7 +17,7 @@ namespace NeoNovaAPI.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.9")
+                .HasAnnotation("ProductVersion", "7.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -316,6 +316,12 @@ namespace NeoNovaAPI.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("FridayClosingTime")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FridayOpeningTime")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Hours")
                         .HasColumnType("nvarchar(max)");
 
@@ -328,6 +334,12 @@ namespace NeoNovaAPI.Migrations
                     b.Property<double>("Longitude")
                         .HasColumnType("float");
 
+                    b.Property<string>("MondayClosingTime")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MondayOpeningTime")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
@@ -337,10 +349,40 @@ namespace NeoNovaAPI.Migrations
                     b.Property<string>("RegistrationType")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("SaturdayClosingTime")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SaturdayOpeningTime")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("State")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SubName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SundayClosingTime")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SundayOpeningTime")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ThursdayClosingTime")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ThursdayOpeningTime")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TuesdayClosingTime")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TuesdayOpeningTime")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("WednesdayClosingTime")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("WednesdayOpeningTime")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ZipCode")
@@ -351,7 +393,382 @@ namespace NeoNovaAPI.Migrations
                     b.ToTable("Stores");
                 });
 
-            modelBuilder.Entity("NeoNovaAPI.Models.DbModels.StoreHour", b =>
+            modelBuilder.Entity("NeoNovaAPI.Models.SecurityModels.Archiving.Archive", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.Property<DateTime>("ArchivedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("RetentionDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ShiftId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TourId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("Archives");
+                });
+
+            modelBuilder.Entity("NeoNovaAPI.Models.SecurityModels.CameraManagment.Camera", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CurrentStatus")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("LocationId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("Cameras");
+                });
+
+            modelBuilder.Entity("NeoNovaAPI.Models.SecurityModels.CameraManagment.CameraHistory", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.Property<int>("CameraId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("CameraHistories");
+                });
+
+            modelBuilder.Entity("NeoNovaAPI.Models.SecurityModels.CameraManagment.CameraLocation", b =>
+                {
+                    b.Property<int>("LocationId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CameraId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.HasKey("LocationId", "CameraId");
+
+                    b.HasIndex("CameraId");
+
+                    b.ToTable("CameraLocations");
+                });
+
+            modelBuilder.Entity("NeoNovaAPI.Models.SecurityModels.CameraManagment.CameraStatus", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.Property<int>("CameraId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsHistorical")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("CameraStatuses");
+                });
+
+            modelBuilder.Entity("NeoNovaAPI.Models.SecurityModels.CameraManagment.Location", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("Locations");
+                });
+
+            modelBuilder.Entity("NeoNovaAPI.Models.SecurityModels.Chat.ChatLog", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("ChatLogs");
+                });
+
+            modelBuilder.Entity("NeoNovaAPI.Models.SecurityModels.Reporting.Report", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Details")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("nvarchar(2048)");
+
+                    b.Property<int>("ManagerId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("Reports");
+                });
+
+            modelBuilder.Entity("NeoNovaAPI.Models.SecurityModels.ShiftManagement.Shift", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.Property<DateTime>("EndTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("ToursCompleted")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("Shifts");
+                });
+
+            modelBuilder.Entity("NeoNovaAPI.Models.SecurityModels.ShiftManagement.ShiftNote", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ShiftId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("ShiftId");
+
+                    b.ToTable("ShiftNotes");
+                });
+
+            modelBuilder.Entity("NeoNovaAPI.Models.SecurityModels.TourManagement.Tour", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.Property<int>("CameraId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("EndTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ShiftID")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("Tours");
+                });
+
+            modelBuilder.Entity("NeoNovaAPI.Models.SecurityModels.TourManagement.TourNote", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("TourId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("TourId");
+
+                    b.ToTable("TourNotes");
+                });
+
+            modelBuilder.Entity("NeoNovaAPI.Models.UserModels.SecurityUser", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("HiredDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("IdentityUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("TerminationDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("IdentityUserId")
+                        .IsUnique();
+
+                    b.ToTable("SecurityUsers");
+                });
+
+            modelBuilder.Entity("NeoNovaAPI.Models.WholesaleModels.WholesaleBugMessage", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -359,21 +776,32 @@ namespace NeoNovaAPI.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("ClosingTime")
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("MessageBody")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Day")
-                        .HasColumnType("int");
+                    b.Property<DateTime>("ModifiedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2");
 
-                    b.Property<string>("OpeningTime")
+                    b.Property<string>("Title")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("StoreId")
+                    b.Property<int>("UrgencyRating")
                         .HasColumnType("int");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("StoreHours");
+                    b.ToTable("WholesaleBugMessages");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -425,6 +853,74 @@ namespace NeoNovaAPI.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("NeoNovaAPI.Models.SecurityModels.CameraManagment.CameraLocation", b =>
+                {
+                    b.HasOne("NeoNovaAPI.Models.SecurityModels.CameraManagment.Camera", "Camera")
+                        .WithMany("CameraLocations")
+                        .HasForeignKey("CameraId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("NeoNovaAPI.Models.SecurityModels.CameraManagment.Location", "Location")
+                        .WithMany("CameraLocations")
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Camera");
+
+                    b.Navigation("Location");
+                });
+
+            modelBuilder.Entity("NeoNovaAPI.Models.SecurityModels.ShiftManagement.ShiftNote", b =>
+                {
+                    b.HasOne("NeoNovaAPI.Models.SecurityModels.ShiftManagement.Shift", null)
+                        .WithMany("ShiftNotes")
+                        .HasForeignKey("ShiftId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("NeoNovaAPI.Models.SecurityModels.TourManagement.TourNote", b =>
+                {
+                    b.HasOne("NeoNovaAPI.Models.SecurityModels.TourManagement.Tour", null)
+                        .WithMany("TourNotes")
+                        .HasForeignKey("TourId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("NeoNovaAPI.Models.UserModels.SecurityUser", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "IdentityUser")
+                        .WithOne()
+                        .HasForeignKey("NeoNovaAPI.Models.UserModels.SecurityUser", "IdentityUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("IdentityUser");
+                });
+
+            modelBuilder.Entity("NeoNovaAPI.Models.SecurityModels.CameraManagment.Camera", b =>
+                {
+                    b.Navigation("CameraLocations");
+                });
+
+            modelBuilder.Entity("NeoNovaAPI.Models.SecurityModels.CameraManagment.Location", b =>
+                {
+                    b.Navigation("CameraLocations");
+                });
+
+            modelBuilder.Entity("NeoNovaAPI.Models.SecurityModels.ShiftManagement.Shift", b =>
+                {
+                    b.Navigation("ShiftNotes");
+                });
+
+            modelBuilder.Entity("NeoNovaAPI.Models.SecurityModels.TourManagement.Tour", b =>
+                {
+                    b.Navigation("TourNotes");
                 });
 #pragma warning restore 612, 618
         }
