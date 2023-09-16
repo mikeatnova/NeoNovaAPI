@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using NeoNovaAPI.Models.DbModels;
+using NeoNovaAPI.Models.UserModels;
 using NeoNovaAPI.Models.WholesaleModels;
 using System;
 
@@ -17,6 +18,18 @@ namespace NeoNovaAPI.Data
         public DbSet<Store> Stores { get; set; } = default!;
         public DbSet<Novadeck> Novadecks { get; set; } = default!;
         public DbSet<WholesaleBugMessage> WholesaleBugMessages { get; set; } = default!;
+
+        public DbSet<SecurityUser> SecurityUsers { get; set; }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<SecurityUser>()
+                .HasOne(s => s.IdentityUser)
+                .WithOne()
+                .HasForeignKey<SecurityUser>(s => s.IdentityUserId);
+        }
+
 
         public override int SaveChanges()
         {
