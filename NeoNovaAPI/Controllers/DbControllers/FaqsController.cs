@@ -26,7 +26,6 @@ namespace NeoNovaAPI.Controllers.DbControllers
             _redisService = redisService;
         }
 
-
         // GET: api/Faqs
         [Authorize(Policy = "AllUsers")]
         [HttpGet]
@@ -46,7 +45,6 @@ namespace NeoNovaAPI.Controllers.DbControllers
 
             return faqs;
         }
-
 
         // GET: api/Faqs/5
         [Authorize(Policy = "AdminOnly")]

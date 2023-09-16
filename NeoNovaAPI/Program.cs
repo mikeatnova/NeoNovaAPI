@@ -62,14 +62,26 @@ builder.Services.AddAuthorization(options =>
         .RequireAuthenticatedUser()
         .Build();
 
+    options.AddPolicy("NeoOnly", policy =>
+        policy.RequireRole("Neo"));
+
     options.AddPolicy("AdminOnly", policy =>
         policy.RequireRole("Neo", "Admin"));
 
     options.AddPolicy("AllUsers", policy =>
-        policy.RequireRole("CommonUser", "Neo", "Admin"));
+        policy.RequireRole( "Neo", "Admin", "CommonUser"));
 
-    options.AddPolicy("NeoOnly", policy =>
-        policy.RequireRole("Neo"));
+    options.AddPolicy("SecurityChiefOnly", policy =>
+        policy.RequireRole("Neo", "Admin", "SecurityChief"));
+
+    options.AddPolicy("SecurityManagement", policy =>
+    policy.RequireRole("Neo", "Admin", "SecurityChief", "SecurityManager"));
+
+    options.AddPolicy("SecuritySupervisor", policy =>
+    policy.RequireRole("Neo", "Admin", "SecurityChief", "SecurityManager", "SecuritySupervisor"));
+
+    options.AddPolicy("SecurityTeam", policy =>
+    policy.RequireRole("Neo", "Admin", "SecurityChief", "SecurityManager", "SecuritySupervisor", "SecurityOfficer"));
 });
 
 
