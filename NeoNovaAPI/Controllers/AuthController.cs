@@ -207,34 +207,41 @@ namespace NeoNovaAPI.Controllers
         [HttpDelete("delete-user/{id}")]
         public async Task<IActionResult> DeleteUser([FromRoute] string id)
         {
+            using var transaction = _context.Database.BeginTransaction();
             try
             {
-                // Find the user by ID
                 var user = await _userManager.FindByIdAsync(id);
                 if (user == null)
                 {
                     return BadRequest("User not found.");
                 }
 
-                // Delete the associated SecurityUser, if it exists
-                var securityUser = await _context.SecurityUsers.SingleOrDefaultAsync(s => s.IdentityUserId == id);
+                // Query for an associated SecurityUser, if any
+                var securityUser = await _context.SecurityUsers
+                                    .Where(s => s.IdentityUserId == id)
+                                    .AsNoTracking()
+                                    .FirstOrDefaultAsync();
+
+                // If SecurityUser exists, remove it
                 if (securityUser != null)
                 {
                     _context.SecurityUsers.Remove(securityUser);
                     await _context.SaveChangesAsync();
                 }
 
-                // Delete the AspNetUser
                 var identityDeleteResult = await _userManager.DeleteAsync(user);
                 if (!identityDeleteResult.Succeeded)
                 {
+                    transaction.Rollback();
                     return BadRequest($"Failed to delete AspNetUser: {string.Join(", ", identityDeleteResult.Errors.Select(e => e.Description))}");
                 }
 
+                transaction.Commit();
                 return Ok("User and associated SecurityUser deleted successfully.");
             }
             catch (Exception ex)
             {
+                transaction.Rollback();
                 return StatusCode(500, $"Internal server error: {ex}");
             }
         }
