@@ -12,20 +12,19 @@ namespace NeoNovaAPI.Models.UserModels
         public int ID { get; set; }
 
         [MaxLength(50)]
-        public string FirstName { get; set; }
+        public string? FirstName { get; set; }
 
         [MaxLength(50)]
-        public string LastName { get; set; }
+        public string? LastName { get; set; }
 
         [Required]
         public bool IsActive { get; set; }
 
-        [Required]
-        public DateTime CreatedAt { get; set; }
+        public DateTime? CreatedAt { get; set; }
 
-        [Required]
-        public DateTime ModifiedAt { get; set; }
-        public DateTime DeletedAt { get; set; }
+        public DateTime? ModifiedAt { get; set; }
+
+        public DateTime? DeletedAt { get; set; }
 
         public DateTime? HiredDate { get; set; }
 
@@ -33,7 +32,7 @@ namespace NeoNovaAPI.Models.UserModels
 
         // Navigation property for 1-to-1 relationship with IdentityUser
         [ForeignKey("IdentityUser")]
-        public string IdentityUserId { get; set; }
+        public string? IdentityUserId { get; set; }
 
         public IdentityUser IdentityUser { get; set; }
     }
