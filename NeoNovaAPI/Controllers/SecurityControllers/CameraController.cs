@@ -111,7 +111,7 @@ namespace NeoNovaAPI.Controllers.SecurityControllers
         // POST: api/Cameras
         [Authorize(Policy = "SecurityTeam")]
         [HttpPost]
-        public async Task<ActionResult<Camera>> PostArchive(Camera camera)
+        public async Task<ActionResult<Camera>> PostCamera(Camera camera)
         {
             _context.Cameras.Add(camera);
             await _context.SaveChangesAsync();

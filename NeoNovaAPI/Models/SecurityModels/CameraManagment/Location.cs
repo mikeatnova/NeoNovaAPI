@@ -22,6 +22,6 @@ namespace NeoNovaAPI.Models.SecurityModels.CameraManagment
         [MaxLength(20)]
         public string State { get; set; }
 
-        public List<CameraLocation> CameraLocations { get; set; }
+        public List<CameraLocation>? CameraLocations { get; set; }
     }
 }

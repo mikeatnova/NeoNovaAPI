@@ -21,13 +21,11 @@ namespace NeoNovaAPI.Models.SecurityModels.CameraManagment
         [MaxLength(20)]
         public string CurrentStatus { get; set; }
 
-        [Required]
-        public DateTime CreatedAt { get; set; }
+        public DateTime? CreatedAt { get; set; }
 
-        [Required]
-        public DateTime ModifiedAt { get; set; }
+        public DateTime? ModifiedAt { get; set; }
 
-        public List<CameraLocation> CameraLocations { get; set; }
+        public List<CameraLocation>? CameraLocations { get; set; }
 
     }
 }
