@@ -17,6 +17,9 @@ namespace NeoNovaAPI.Models.SecurityModels.CameraManagment
         [ForeignKey("Location")]
         public int LocationId { get; set; }
 
+        [MaxLength(256)]
+        public string? Notes { get; set; }
+
         [Required]
         [MaxLength(20)]
         public string CurrentStatus { get; set; }
