@@ -12,6 +12,7 @@ using NeoNovaAPI.Services;
 using Newtonsoft.Json;
 using NeoNovaAPI.Models.SecurityModels.Archiving;
 using NeoNovaAPI.Models.SecurityModels.CameraManagment;
+using Microsoft.AspNetCore.JsonPatch;
 
 namespace NeoNovaAPI.Controllers.SecurityControllers
 {
@@ -44,7 +45,7 @@ namespace NeoNovaAPI.Controllers.SecurityControllers
             }
 
             var cameras = await _context.Cameras.ToListAsync();
-            _redisService.SetString(key, JsonConvert.SerializeObject(cameras), TimeSpan.FromDays(7));
+            _redisService.SetString(key, JsonConvert.SerializeObject(cameras), TimeSpan.FromDays(1));
 
             return cameras;
         }
@@ -69,7 +70,7 @@ namespace NeoNovaAPI.Controllers.SecurityControllers
                 return NotFound();
             }
 
-            _redisService.SetString(key, JsonConvert.SerializeObject(camera), TimeSpan.FromDays(7));
+            _redisService.SetString(key, JsonConvert.SerializeObject(camera), TimeSpan.FromDays(1));
 
             return camera;
         }

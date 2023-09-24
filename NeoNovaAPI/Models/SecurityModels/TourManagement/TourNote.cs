@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using NeoNovaAPI.Models.SecurityModels.Reporting;
 
 namespace NeoNovaAPI.Models.SecurityModels.TourManagement
 {
@@ -15,8 +16,8 @@ namespace NeoNovaAPI.Models.SecurityModels.TourManagement
 
         public virtual Tour Tour { get; set; }
 
-        [Required]
-        public string Note { get; set; }
+        public int? NoteId { get; set; }
+        public Note Note { get; set; }
 
         [Required]
         public DateTime Timestamp { get; set; }

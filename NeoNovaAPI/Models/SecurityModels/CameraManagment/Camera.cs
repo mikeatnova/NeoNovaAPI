@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using NeoNovaAPI.Models.SecurityModels.Reporting;
 
 namespace NeoNovaAPI.Models.SecurityModels.CameraManagment
 {
@@ -17,8 +18,8 @@ namespace NeoNovaAPI.Models.SecurityModels.CameraManagment
         [ForeignKey("Location")]
         public int LocationId { get; set; }
 
-        [MaxLength(256)]
-        public string? Notes { get; set; }
+        public int? NoteId { get; set; }
+        public Note Note { get; set; }
 
         [Required]
         [MaxLength(20)]
