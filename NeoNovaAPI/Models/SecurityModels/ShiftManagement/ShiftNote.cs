@@ -15,6 +15,7 @@ namespace NeoNovaAPI.Models.SecurityModels.ShiftManagement
         public int ShiftId { get; set; }
         public virtual Shift Shift { get; set; }
 
+        [ForeignKey("Note")]
         public int? NoteId { get; set; }
         public Note Note { get; set; }
 

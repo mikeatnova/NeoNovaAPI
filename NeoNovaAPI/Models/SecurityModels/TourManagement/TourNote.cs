@@ -16,6 +16,7 @@ namespace NeoNovaAPI.Models.SecurityModels.TourManagement
 
         public virtual Tour Tour { get; set; }
 
+        [ForeignKey("Note")]
         public int? NoteId { get; set; }
         public Note Note { get; set; }
 

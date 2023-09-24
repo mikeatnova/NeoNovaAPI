@@ -38,6 +38,7 @@ namespace NeoNovaAPI.Data
         public DbSet<Location> Locations { get; set; }
         public DbSet<ChatLog> ChatLogs { get; set; }
         public DbSet<Report> Reports { get; set; }
+        public DbSet<Note> Notes { get; set; } = default!;
         public DbSet<Shift> Shifts { get; set; }
         public DbSet<ShiftNote> ShiftNotes { get; set; }
         public DbSet<Tour> Tours { get; set; }
@@ -74,6 +75,30 @@ namespace NeoNovaAPI.Data
                 .HasOne(tn => tn.Tour)
                 .WithMany(t => t.TourNotes)
                 .HasForeignKey(tn => tn.TourId);
+
+            modelBuilder.Entity<ShiftNote>()
+                .HasOne(sn => sn.Note)
+                .WithMany()
+                .HasForeignKey(sn => sn.NoteId);
+
+            modelBuilder.Entity<TourNote>()
+                .HasOne(tn => tn.Note)
+                .WithMany()
+                .HasForeignKey(tn => tn.NoteId);
+            modelBuilder.Entity<CameraStatus>()
+                .HasOne(cs => cs.Note)
+                .WithMany()
+                .HasForeignKey(cs => cs.NoteId);
+
+            modelBuilder.Entity<CameraHistory>()
+                .HasOne(ch => ch.Note)
+                .WithMany()
+                .HasForeignKey(ch => ch.NoteId);
+
+            modelBuilder.Entity<Camera>()
+                .HasOne(ch => ch.Note)
+                .WithMany()
+                .HasForeignKey(ch => ch.NoteId);
         }
 
         public override int SaveChanges()

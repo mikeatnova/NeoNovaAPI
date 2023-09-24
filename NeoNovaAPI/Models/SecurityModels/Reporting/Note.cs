@@ -32,16 +32,6 @@ namespace NeoNovaAPI.Models.SecurityModels.Reporting
 
         public DateTime CreatedAt { get; set; }
 
-        [ForeignKey("Shift")]
-        public int? ShiftId { get; set; }
-
-        public virtual Shift Shift { get; set; }
-
-        [ForeignKey("Tour")]
-        public int? TourId { get; set; }
-
-        public virtual Tour Tour { get; set; }
-
         [Required]
         public DateTime Timestamp { get; set; }
     }

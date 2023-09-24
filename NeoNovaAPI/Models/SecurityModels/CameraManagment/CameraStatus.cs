@@ -18,6 +18,7 @@ namespace NeoNovaAPI.Models.SecurityModels.CameraManagment
         [MaxLength(20)]
         public string Status { get; set; }
 
+        [ForeignKey("Note")]
         public int? NoteId { get; set; }
         public Note Note { get; set; }
 

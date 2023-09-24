@@ -12,7 +12,6 @@ using NeoNovaAPI.Services;
 using Newtonsoft.Json;
 using NeoNovaAPI.Models.SecurityModels.Archiving;
 using NeoNovaAPI.Models.SecurityModels.CameraManagment;
-using Microsoft.AspNetCore.JsonPatch;
 
 namespace NeoNovaAPI.Controllers.SecurityControllers
 {

@@ -18,6 +18,7 @@ namespace NeoNovaAPI.Models.SecurityModels.CameraManagment
         [ForeignKey("Location")]
         public int LocationId { get; set; }
 
+        [ForeignKey("Note")]
         public int? NoteId { get; set; }
         public Note Note { get; set; }
 
