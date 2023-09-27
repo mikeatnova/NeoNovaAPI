@@ -102,8 +102,7 @@ namespace NeoNovaAPI.Controllers.SecurityControllers
             return NoContent();
         }
 
-        //[Authorize(Policy = "SecurityTeam")]
-        [AllowAnonymous]
+        [Authorize(Policy = "SecurityTeam")]
         [HttpPost]
         public async Task<ActionResult<Note>> PostNote(Note note)
         {
