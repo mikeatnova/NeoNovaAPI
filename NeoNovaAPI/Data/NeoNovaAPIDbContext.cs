@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using NeoNovaAPI.Models.DbModels;
 using NeoNovaAPI.Models.SecurityModels.Archiving;
-using NeoNovaAPI.Models.SecurityModels.CameraManagment;
+using NeoNovaAPI.Models.SecurityModels.CameraManagement;
 using NeoNovaAPI.Models.SecurityModels.Chat;
 using NeoNovaAPI.Models.SecurityModels.Reporting;
 using NeoNovaAPI.Models.SecurityModels.ShiftManagement;
@@ -40,9 +40,7 @@ namespace NeoNovaAPI.Data
         public DbSet<Report> Reports { get; set; }
         public DbSet<Note> Notes { get; set; } = default!;
         public DbSet<Shift> Shifts { get; set; }
-        public DbSet<ShiftNote> ShiftNotes { get; set; }
         public DbSet<Tour> Tours { get; set; }
-        public DbSet<TourNote> TourNotes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -60,45 +58,6 @@ namespace NeoNovaAPI.Data
                 .HasOne(cl => cl.Location)
                 .WithMany(l => l.CameraLocations)
                 .HasForeignKey(cl => cl.LocationId);
-
-            modelBuilder.Entity<CameraLocation>()
-                .HasOne(cl => cl.Camera)
-                .WithMany(c => c.CameraLocations)
-                .HasForeignKey(cl => cl.CameraId);
-
-            modelBuilder.Entity<ShiftNote>()
-                .HasOne(sn => sn.Shift)
-                .WithMany(s => s.ShiftNotes)
-                .HasForeignKey(sn => sn.ShiftId);
-
-            modelBuilder.Entity<TourNote>()
-                .HasOne(tn => tn.Tour)
-                .WithMany(t => t.TourNotes)
-                .HasForeignKey(tn => tn.TourId);
-
-            modelBuilder.Entity<ShiftNote>()
-                .HasOne(sn => sn.Note)
-                .WithMany()
-                .HasForeignKey(sn => sn.NoteId);
-
-            modelBuilder.Entity<TourNote>()
-                .HasOne(tn => tn.Note)
-                .WithMany()
-                .HasForeignKey(tn => tn.NoteId);
-            modelBuilder.Entity<CameraStatus>()
-                .HasOne(cs => cs.Note)
-                .WithMany()
-                .HasForeignKey(cs => cs.NoteId);
-
-            modelBuilder.Entity<CameraHistory>()
-                .HasOne(ch => ch.Note)
-                .WithMany()
-                .HasForeignKey(ch => ch.NoteId);
-
-            modelBuilder.Entity<Camera>()
-                .HasOne(ch => ch.Note)
-                .WithMany()
-                .HasForeignKey(ch => ch.NoteId);
         }
 
         public override int SaveChanges()

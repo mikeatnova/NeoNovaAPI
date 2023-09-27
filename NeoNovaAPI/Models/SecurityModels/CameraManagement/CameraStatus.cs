@@ -2,18 +2,21 @@
 using System.ComponentModel.DataAnnotations;
 using NeoNovaAPI.Models.SecurityModels.Reporting;
 
-namespace NeoNovaAPI.Models.SecurityModels.ShiftManagement
+namespace NeoNovaAPI.Models.SecurityModels.CameraManagement
 {
-    [Table("ShiftNotes")]
-    public class ShiftNote
+    [Table("CameraStatuses")]
+    public class CameraStatus
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ID { get; set; }
 
-        [ForeignKey("Shift")]
-        public int ShiftId { get; set; }
-        public virtual Shift Shift { get; set; }
+        [ForeignKey("Camera")]
+        public int CameraId { get; set; }
+
+        [Required]
+        [MaxLength(20)]
+        public string Status { get; set; }
 
         [ForeignKey("Note")]
         public int? NoteId { get; set; }
@@ -21,5 +24,8 @@ namespace NeoNovaAPI.Models.SecurityModels.ShiftManagement
 
         [Required]
         public DateTime Timestamp { get; set; }
+
+        [Required]
+        public bool IsHistorical { get; set; }
     }
 }

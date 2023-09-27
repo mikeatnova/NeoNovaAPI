@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
-namespace NeoNovaAPI.Models.SecurityModels.CameraManagment
+namespace NeoNovaAPI.Models.SecurityModels.CameraManagement
 {
     [Table("Locations")]
     public class Location
@@ -23,5 +23,8 @@ namespace NeoNovaAPI.Models.SecurityModels.CameraManagment
         public string State { get; set; }
 
         public List<CameraLocation>? CameraLocations { get; set; }
+
+        [Required]
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

@@ -2,10 +2,10 @@
 using System.ComponentModel.DataAnnotations;
 using NeoNovaAPI.Models.SecurityModels.Reporting;
 
-namespace NeoNovaAPI.Models.SecurityModels.CameraManagment
+namespace NeoNovaAPI.Models.SecurityModels.CameraManagement
 {
-    [Table("CameraStatuses")]
-    public class CameraStatus
+    [Table("CameraHistories")]
+    public class CameraHistory
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -24,8 +24,5 @@ namespace NeoNovaAPI.Models.SecurityModels.CameraManagment
 
         [Required]
         public DateTime Timestamp { get; set; }
-
-        [Required]
-        public bool IsHistorical { get; set; }
     }
 }
