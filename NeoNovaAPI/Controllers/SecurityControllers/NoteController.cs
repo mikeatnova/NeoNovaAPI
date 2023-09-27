@@ -40,7 +40,7 @@ namespace NeoNovaAPI.Controllers.SecurityControllers
             }
 
             var notes = await _context.Notes.ToListAsync();
-            _redisService.SetString(key, JsonConvert.SerializeObject(notes), TimeSpan.FromDays(7));
+            _redisService.SetString(key, JsonConvert.SerializeObject(notes), TimeSpan.FromMinutes(1));
 
             return notes;
         }
