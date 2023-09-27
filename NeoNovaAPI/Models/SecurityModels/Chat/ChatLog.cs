@@ -19,5 +19,8 @@ namespace NeoNovaAPI.Models.SecurityModels.Chat
 
         [Required]
         public DateTime Timestamp { get; set; }
+
+        [Required]
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

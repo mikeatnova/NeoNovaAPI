@@ -10,8 +10,7 @@ namespace NeoNovaAPI.Models.SecurityModels.Archiving
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ID { get; set; }
 
-        [Required]
-        public DateTime ArchivedAt { get; set; }
+        public DateTime? ArchivedAt { get; set; }
 
         [ForeignKey("Shift")]
         public int ShiftId { get; set; }

@@ -1,7 +1,4 @@
-﻿using NeoNovaAPI.Models.SecurityModels.ShiftManagement;
-using NeoNovaAPI.Models.SecurityModels.TourManagement;
-using NeoNovaAPI.Models.UserModels;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
 namespace NeoNovaAPI.Models.SecurityModels.Reporting
@@ -14,10 +11,7 @@ namespace NeoNovaAPI.Models.SecurityModels.Reporting
         public int ID { get; set; }
 
         [Required]
-        [ForeignKey("SecurityUser")]
-        public int UserId { get; set; }
-
-        public virtual SecurityUser User { get; set; }
+        public string UserId { get; set; }
 
         [Required]
         public string Content { get; set; }
@@ -30,9 +24,14 @@ namespace NeoNovaAPI.Models.SecurityModels.Reporting
 
         public string? Role { get; set; }
 
-        public DateTime CreatedAt { get; set; }
+        [Required]
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         [Required]
-        public DateTime Timestamp { get; set; }
+        public string NoteableType { get; set; } // e.g., "Camera", "Tour", "Shift"
+
+        [Required]
+        public int NoteableId { get; set; } // e.g., CameraId, TourId, ShiftId
+
     }
 }

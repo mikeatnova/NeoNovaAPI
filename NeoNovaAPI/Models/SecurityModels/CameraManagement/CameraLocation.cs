@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
-namespace NeoNovaAPI.Models.SecurityModels.CameraManagment
+namespace NeoNovaAPI.Models.SecurityModels.CameraManagement
 {
     [Table("CameraLocations")]
     public class CameraLocation

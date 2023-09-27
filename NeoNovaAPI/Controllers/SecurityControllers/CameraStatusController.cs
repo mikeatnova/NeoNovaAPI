@@ -11,7 +11,7 @@ using NeoNovaAPI.Models.DbModels;
 using NeoNovaAPI.Services;
 using Newtonsoft.Json;
 using NeoNovaAPI.Models.SecurityModels.Archiving;
-using NeoNovaAPI.Models.SecurityModels.CameraManagment;
+using NeoNovaAPI.Models.SecurityModels.CameraManagement;
 
 namespace NeoNovaAPI.Controllers.SecurityControllers
 {
