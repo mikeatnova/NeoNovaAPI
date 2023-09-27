@@ -1,17 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using NeoNovaAPI.Data;
-using NeoNovaAPI.Models.DbModels;
 using NeoNovaAPI.Services;
 using Newtonsoft.Json;
-using NeoNovaAPI.Models.SecurityModels.Archiving;
 using NeoNovaAPI.Models.SecurityModels.CameraManagement;
+using Microsoft.AspNetCore.JsonPatch;
 
 namespace NeoNovaAPI.Controllers.SecurityControllers
 {
@@ -121,6 +115,48 @@ namespace NeoNovaAPI.Controllers.SecurityControllers
             return CreatedAtAction("GetCameras", new { id = camera.ID }, camera);
         }
 
+        // PATCH: api/Cameras
+        [Authorize(Policy = "SecurityTeam")]
+        [HttpPatch("{id}")]
+        public async Task<IActionResult> PatchCamera(int id, [FromBody] JsonPatchDocument<Camera> patchDoc)
+        {
+            if (patchDoc == null)
+            {
+                return BadRequest();
+            }
+
+            string key = $"camera:{id}";
+            string cachedCamera = _redisService.GetString(key);
+            Camera camera;
+
+            if (cachedCamera != null)
+            {
+                camera = JsonConvert.DeserializeObject<Camera>(cachedCamera);
+            }
+            else
+            {
+                camera = await _context.Cameras.FindAsync(id);
+                if (camera == null)
+                {
+                    return NotFound();
+                }
+            }
+
+            patchDoc.ApplyTo(camera, (Microsoft.AspNetCore.JsonPatch.Adapters.IObjectAdapter)ModelState);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            _context.Entry(camera).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+
+            _redisService.DeleteKey("cameras"); // Invalidate the cache
+            _redisService.DeleteKey(key); // Invalidate the specific cache entry
+
+            return NoContent();
+        }
 
         // DELETE: api/Cameras/5
         [Authorize(Policy = "SecurityTeam")]
