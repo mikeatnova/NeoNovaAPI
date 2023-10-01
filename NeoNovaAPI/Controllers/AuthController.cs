@@ -203,11 +203,8 @@ namespace NeoNovaAPI.Controllers
             }
         }
 
-
-
-        //[Authorize(Policy = "SecurityManagement")]
+        [Authorize(Policy = "SecurityManagement")]
         [HttpGet("get-security-users")]
-        [AllowAnonymous]
         public async Task<IActionResult> GetSecurityUsers()
         {
             try
@@ -251,8 +248,7 @@ namespace NeoNovaAPI.Controllers
             }
         }
 
-        //[Authorize(Policy = "SecurityManagement")]
-        [AllowAnonymous]
+        [Authorize(Policy = "SecurityManagement")]
         [HttpPut("update-security-user")]
         public async Task<IActionResult> UpdateSecurityUser([FromBody] UpdateSecurityUserDto updateDto)
         {
@@ -300,7 +296,6 @@ namespace NeoNovaAPI.Controllers
             }
         }
 
-
         [Authorize]
         [HttpGet("get-user-profile/{id}")]
         public async Task<IActionResult> GetUserProfile([FromRoute] string id)
@@ -329,7 +324,6 @@ namespace NeoNovaAPI.Controllers
 
             return Ok(profileData);
         }
-
 
         [Authorize(Policy = "AdminOnly")]
         [HttpDelete("delete-user/{id}")]
