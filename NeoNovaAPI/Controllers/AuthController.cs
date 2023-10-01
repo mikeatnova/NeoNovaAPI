@@ -203,6 +203,134 @@ namespace NeoNovaAPI.Controllers
             }
         }
 
+
+
+        //[Authorize(Policy = "SecurityManagement")]
+        [HttpGet("get-security-users")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetSecurityUsers()
+        {
+            try
+            {
+                // Fetch all users with their corresponding roles and SecurityUser details
+                var usersWithRoles = await (from user in _context.Users
+                                            join secUser in _context.SecurityUsers on user.Id equals secUser.IdentityUserId
+                                            join userRole in _context.UserRoles on user.Id equals userRole.UserId
+                                            join role in _context.Roles on userRole.RoleId equals role.Id
+                                            select new
+                                            {
+                                                user.Id,
+                                                user.UserName,
+                                                user.Email,
+                                                secUser.FirstName,
+                                                secUser.LastName,
+                                                secUser.HiredDate,
+                                                RoleName = role.Name
+                                            })
+                                            .ToListAsync();
+
+                // Group by user and aggregate roles
+                var groupedUsers = usersWithRoles.GroupBy(u => u.Id)
+                                                 .Select(g => new
+                                                 {
+                                                     Id = g.Key,
+                                                     UserName = g.First().UserName,
+                                                     Email = g.First().Email,
+                                                     FirstName = g.First().FirstName,
+                                                     LastName = g.First().LastName,
+                                                     HiredDate = g.First().HiredDate,
+                                                     Roles = g.Select(u => u.RoleName).ToList()
+                                                 })
+                                                 .ToList();
+
+                return Ok(groupedUsers);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex}");
+            }
+        }
+
+        //[Authorize(Policy = "SecurityManagement")]
+        [AllowAnonymous]
+        [HttpPut("update-security-user")]
+        public async Task<IActionResult> UpdateSecurityUser([FromBody] UpdateSecurityUserDto updateDto)
+        {
+            try
+            {
+                // Fetch the Identity User
+                var identityUser = await _userManager.FindByIdAsync(updateDto.Id);
+                if (identityUser == null)
+                {
+                    return NotFound("User not found");
+                }
+
+                // Update Identity User details
+                identityUser.UserName = updateDto.UserName;
+                identityUser.Email = updateDto.Email;
+                var identityResult = await _userManager.UpdateAsync(identityUser);
+
+                if (!identityResult.Succeeded)
+                {
+                    return BadRequest(identityResult.Errors);
+                }
+
+                // Fetch the Security User
+                var securityUser = await _context.SecurityUsers
+                                                  .FirstOrDefaultAsync(s => s.IdentityUserId == updateDto.Id);
+
+                if (securityUser == null)
+                {
+                    return NotFound("Security User not found");
+                }
+
+                // Update Security User details
+                securityUser.FirstName = updateDto.FirstName;
+                securityUser.LastName = updateDto.LastName;
+                securityUser.HiredDate = updateDto.HiredDate ?? securityUser.HiredDate;
+
+                _context.SecurityUsers.Update(securityUser);
+                await _context.SaveChangesAsync();
+
+                return Ok("User updated successfully");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex}");
+            }
+        }
+
+
+        [Authorize]
+        [HttpGet("get-user-profile/{id}")]
+        public async Task<IActionResult> GetUserProfile([FromRoute] string id)
+        {
+            // Fetch the IdentityUser from the database
+            var identityUser = await _userManager.FindByIdAsync(id);
+            if (identityUser == null)
+            {
+                return NotFound("IdentityUser not found.");
+            }
+
+            // Fetch the associated SecurityUser from the database
+            var securityUser = await _context.SecurityUsers
+                                       .FirstOrDefaultAsync(su => su.IdentityUserId == id);
+            if (securityUser == null)
+            {
+                return NotFound("SecurityUser not found.");
+            }
+
+            // Prepare the data for the client
+            var profileData = new
+            {
+                IdentityUser = identityUser,
+                SecurityUser = securityUser
+            };
+
+            return Ok(profileData);
+        }
+
+
         [Authorize(Policy = "AdminOnly")]
         [HttpDelete("delete-user/{id}")]
         public async Task<IActionResult> DeleteUser([FromRoute] string id)

@@ -64,7 +64,7 @@ namespace NeoNovaAPI.Controllers.SecurityControllers
                 return NotFound();
             }
 
-            _redisService.SetString(key, JsonConvert.SerializeObject(note), TimeSpan.FromDays(7));
+            _redisService.SetString(key, JsonConvert.SerializeObject(note), TimeSpan.FromMinutes(1));
 
             return note;
         }

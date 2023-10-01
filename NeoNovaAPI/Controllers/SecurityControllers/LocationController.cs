@@ -28,7 +28,8 @@ namespace NeoNovaAPI.Controllers.SecurityControllers
         }
 
         // GET: api/Locations
-        [Authorize(Policy = "SecurityTeam")]
+        //[Authorize(Policy = "SecurityTeam")]
+        [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Location>>> GetLocations()
         {
@@ -41,7 +42,7 @@ namespace NeoNovaAPI.Controllers.SecurityControllers
             }
 
             var locations = await _context.Locations.ToListAsync();
-            _redisService.SetString(key, JsonConvert.SerializeObject(locations), TimeSpan.FromDays(7));
+            _redisService.SetString(key, JsonConvert.SerializeObject(locations), TimeSpan.FromDays(1));
 
             return locations;
         }
@@ -66,7 +67,7 @@ namespace NeoNovaAPI.Controllers.SecurityControllers
                 return NotFound();
             }
 
-            _redisService.SetString(key, JsonConvert.SerializeObject(location), TimeSpan.FromDays(7));
+            _redisService.SetString(key, JsonConvert.SerializeObject(location), TimeSpan.FromDays(1));
 
             return location;
         }
