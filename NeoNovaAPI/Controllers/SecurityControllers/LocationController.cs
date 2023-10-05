@@ -42,7 +42,7 @@ namespace NeoNovaAPI.Controllers.SecurityControllers
             }
 
             var locations = await _context.Locations.ToListAsync();
-            _redisService.SetString(key, JsonConvert.SerializeObject(locations), TimeSpan.FromDays(1));
+            _redisService.SetString(key, JsonConvert.SerializeObject(locations), TimeSpan.FromMinutes(1));
 
             return locations;
         }
