@@ -67,6 +67,9 @@ builder.Services.AddAuthorization(options =>
 
     options.AddPolicy("AdminOnly", policy =>
         policy.RequireRole("Neo", "Admin"));
+    
+    options.AddPolicy("GeneralLeadership", policy =>
+        policy.RequireRole("Neo", "Admin", "SecurityChief", "SecurityManager", "SecuritySupervisor"));
 
     options.AddPolicy("AllUsers", policy =>
         policy.RequireRole( "Neo", "Admin", "CommonUser"));

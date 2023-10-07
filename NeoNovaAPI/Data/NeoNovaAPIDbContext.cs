@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using NeoNovaAPI.Models.DbModels;
 using NeoNovaAPI.Models.Loyalty;
+using NeoNovaAPI.Models.Messaging;
 using NeoNovaAPI.Models.SecurityModels.Archiving;
 using NeoNovaAPI.Models.SecurityModels.CameraManagement;
 using NeoNovaAPI.Models.SecurityModels.Chat;
@@ -50,6 +51,12 @@ namespace NeoNovaAPI.Data
         public DbSet<SmallPerk> SmallPerks { get; set; } = default!;
         public DbSet<BigPerk> BigPerks { get; set; } = default!;
 
+        // Palantir Messaging DB Sets
+        public DbSet<PalantirMessage> PalantirMessages { get; set; } = default!;
+        public DbSet<Tag> Tags { get; set; } = default!;
+        public DbSet<MessageTag> MessageTags { get; set; } = default!;
+        public DbSet<Comment> Comments { get; set; } = default!;
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -83,10 +90,35 @@ namespace NeoNovaAPI.Data
 
             // For AspNetUsers and UserLoyaltyStatus
             //modelBuilder.Entity<AspNetUsers>()
-                //.HasOne(a => a.UserLoyaltyStatus)
-                //.WithMany()
-                //.HasForeignKey(a => a.UserLoyaltyStatusId);
+            //.HasOne(a => a.UserLoyaltyStatus)
+            //.WithMany()
+            //.HasForeignKey(a => a.UserLoyaltyStatusId);
+            // For PalantírMessage and Comment
 
+            modelBuilder.Entity<PalantirMessage>()
+                .HasMany(p => p.Comments)
+                .WithOne()
+                .HasForeignKey(c => c.PalantirMessageId);
+
+            // For PalantírMessage and MessageTag (Many-to-Many with Tag)
+            modelBuilder.Entity<MessageTag>()
+                .HasKey(mt => new { mt.PalantirMessageId, mt.TagId });
+
+            modelBuilder.Entity<MessageTag>()
+                .HasOne(mt => mt.PalantirMessage)
+                .WithMany(p => p.MessageTags)
+                .HasForeignKey(mt => mt.PalantirMessageId);
+
+            modelBuilder.Entity<MessageTag>()
+                .HasOne(mt => mt.Tag)
+                .WithMany(t => t.MessageTags)
+                .HasForeignKey(mt => mt.TagId);
+
+            // For Tag and MessageTag (Many-to-Many with PalantírMessage)
+            modelBuilder.Entity<Tag>()
+                .HasMany(t => t.MessageTags)
+                .WithOne(mt => mt.Tag)
+                .HasForeignKey(mt => mt.TagId);
         }
 
         public override int SaveChanges()
