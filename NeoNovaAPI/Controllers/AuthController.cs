@@ -219,6 +219,7 @@ namespace NeoNovaAPI.Controllers
                                                 user.Id,
                                                 user.UserName,
                                                 user.Email,
+                                                user.PhoneNumber,
                                                 secUser.FirstName,
                                                 secUser.LastName,
                                                 secUser.HiredDate,
@@ -233,6 +234,7 @@ namespace NeoNovaAPI.Controllers
                                                      Id = g.Key,
                                                      UserName = g.First().UserName,
                                                      Email = g.First().Email,
+                                                     PhoneNumber = g.First().PhoneNumber,
                                                      FirstName = g.First().FirstName,
                                                      LastName = g.First().LastName,
                                                      HiredDate = g.First().HiredDate,
@@ -247,6 +249,70 @@ namespace NeoNovaAPI.Controllers
                 return StatusCode(500, $"Internal server error: {ex}");
             }
         }
+
+
+        // Authorized only for Security Management
+        [Authorize(Policy = "SecurityManagement")]
+        [HttpPost("seed-new-security-user")]
+        public async Task<IActionResult> SeedNewSecurityUser([FromBody] SeedSecurityUserModel seedUser)
+        {
+            // Validation for 'Role' if needed
+            if (!IsValidSecurityRole(seedUser.Role)) return BadRequest("Invalid Role");
+
+            string username = string.Empty;
+            string password = seedUser.Password;
+            IdentityResult result;
+
+            do
+            {
+                // Generate a username based on the role
+                username = _seedUserGenerator.SeedUsernameGenerator(seedUser.Role);
+
+                // Create IdentityUser
+                var user = new IdentityUser
+                {
+                    UserName = username,
+                    Email = seedUser.Email,
+                    PhoneNumber = seedUser.PhoneNumber,
+                    EmailConfirmed = true
+                };
+
+                // Create User
+                result = await _userManager.CreateAsync(user, seedUser.Password);
+
+                if (result.Succeeded)
+                {
+                    // Assign Role
+                    await _userManager.AddToRoleAsync(user, seedUser.Role);
+
+                    // Create SecurityUser entity
+                    var securityUser = new SecurityUser
+                    {
+                        IdentityUserId = user.Id,
+                        IsActive = true,
+                        CreatedAt = DateTime.UtcNow,
+                        ModifiedAt = DateTime.UtcNow,
+                        FirstName = seedUser.FirstName,
+                        LastName = seedUser.LastName,
+                        HiredDate = seedUser.HiredDate
+                    };
+
+                    _context.SecurityUsers.Add(securityUser);
+                    await _context.SaveChangesAsync();
+
+                    return Ok(new { Message = $"{seedUser.Role} user created successfully", Username = username });
+                }
+
+            } while (result.Errors.Any(e => e.Code == "DuplicateUserName"));
+
+            return BadRequest(result.Errors);
+        }
+
+        private bool IsValidSecurityRole(string role)
+        {
+            return role == "SecurityOfficer" || role == "SecurityManager" || role == "SecuritySupervisor" || role == "SecurityChief";
+        }
+
 
         [Authorize(Policy = "SecurityManagement")]
         [HttpPut("update-security-user")]
@@ -264,6 +330,7 @@ namespace NeoNovaAPI.Controllers
                 // Update Identity User details
                 identityUser.UserName = updateDto.UserName;
                 identityUser.Email = updateDto.Email;
+                identityUser.PhoneNumber = updateDto.PhoneNumber;
                 var identityResult = await _userManager.UpdateAsync(identityUser);
 
                 if (!identityResult.Succeeded)

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using NeoNovaAPI.Models.DbModels;
+using NeoNovaAPI.Models.Loyalty;
 using NeoNovaAPI.Models.SecurityModels.Archiving;
 using NeoNovaAPI.Models.SecurityModels.CameraManagement;
 using NeoNovaAPI.Models.SecurityModels.Chat;
@@ -42,6 +43,14 @@ namespace NeoNovaAPI.Data
         public DbSet<Shift> Shifts { get; set; }
         public DbSet<Tour> Tours { get; set; }
 
+        // Loyalty DB Sets
+        public DbSet<LoyaltyProgram> LoyaltyPrograms { get; set; } = default!;
+        public DbSet<UserLoyaltyStatus> UserLoyaltyStatuses { get; set; } = default!;
+        public DbSet<LoyaltyTier> LoyaltyTiers { get; set; } = default!;
+        public DbSet<SmallPerk> SmallPerks { get; set; } = default!;
+        public DbSet<BigPerk> BigPerks { get; set; } = default!;
+
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -58,6 +67,26 @@ namespace NeoNovaAPI.Data
                 .HasOne(cl => cl.Location)
                 .WithMany(l => l.CameraLocations)
                 .HasForeignKey(cl => cl.LocationId);
+
+
+            // For LoyaltyProgram and LoyaltyTier
+            modelBuilder.Entity<LoyaltyProgram>()
+                .HasMany(lp => lp.Tiers)
+                .WithOne(t => t.LoyaltyProgram)
+                .HasForeignKey(t => t.LoyaltyProgramId);
+
+            // For UserLoyaltyStatus and LoyaltyTier
+            modelBuilder.Entity<UserLoyaltyStatus>()
+                .HasOne(uls => uls.CurrentTier)
+                .WithMany()
+                .HasForeignKey(uls => uls.CurrentTierId);
+
+            // For AspNetUsers and UserLoyaltyStatus
+            //modelBuilder.Entity<AspNetUsers>()
+                //.HasOne(a => a.UserLoyaltyStatus)
+                //.WithMany()
+                //.HasForeignKey(a => a.UserLoyaltyStatusId);
+
         }
 
         public override int SaveChanges()
