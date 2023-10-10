@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using NeoNovaAPI.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -10,12 +12,15 @@ namespace NeoNovaAPI.Services
     {
         private readonly IConfiguration _configuration;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly NeoNovaAPIDbContext _dbContext;
 
 
-        public JwtService(IConfiguration configuration, UserManager<IdentityUser> userManager)
+
+        public JwtService(NeoNovaAPIDbContext context, IConfiguration configuration, UserManager<IdentityUser> userManager)
         {
             _configuration = configuration;
             _userManager = userManager;
+            _dbContext = context;
         }
 
         public async Task<string> GenerateToken(IdentityUser user)
@@ -25,6 +30,7 @@ namespace NeoNovaAPI.Services
             {
                 throw new ArgumentException("Invalid user or user name.");
             }
+
             var roles = await _userManager.GetRolesAsync(user);
 
             var claims = new List<Claim>
@@ -34,6 +40,27 @@ namespace NeoNovaAPI.Services
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), // Unique Token ID
             };
+
+            // Fetch SecurityUser details only if the role matches
+            if (roles.Any(role => role == "SecurityChief" || role == "SecurityManager" || role == "SecuritySupervisor" || role == "SecurityOfficer"))
+            {
+                var securityUser = await _dbContext.SecurityUsers
+                                          .FirstOrDefaultAsync(u => u.IdentityUserId == user.Id);
+
+                if (securityUser != null)
+                {
+                    if (!string.IsNullOrEmpty(securityUser.FirstName))
+                    {
+                        claims.Add(new Claim("FirstName", securityUser.FirstName));
+                    }
+
+                    if (!string.IsNullOrEmpty(securityUser.LastName))
+                    {
+                        claims.Add(new Claim("LastName", securityUser.LastName));
+                    }
+                }
+            }
+
             claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
             var jwtKey = _configuration["Jwt:Key"];

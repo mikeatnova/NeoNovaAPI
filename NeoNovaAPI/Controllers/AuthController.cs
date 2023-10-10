@@ -250,7 +250,6 @@ namespace NeoNovaAPI.Controllers
             }
         }
 
-
         // Authorized only for Security Management
         [Authorize(Policy = "SecurityManagement")]
         [HttpPost("seed-new-security-user")]
