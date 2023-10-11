@@ -58,6 +58,11 @@ namespace NeoNovaAPI.Services
                     {
                         claims.Add(new Claim("LastName", securityUser.LastName));
                     }
+
+                    if (!string.IsNullOrEmpty(securityUser.SecurityUsername))
+                    {
+                        claims.Add(new Claim("SecurityUsername", securityUser.SecurityUsername));
+                    }
                 }
             }
 

@@ -13,6 +13,7 @@ namespace NeoNovaAPI.Models.SecurityModels.Reporting
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public string? UserRole { get; set; }
+        public string? ActivityType { get; set; }
         public string? Action { get; set; }
         public DateTime ActionTime { get; set; } = DateTime.UtcNow;
 

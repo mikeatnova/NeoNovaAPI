@@ -222,6 +222,7 @@ namespace NeoNovaAPI.Controllers
                                                 user.PhoneNumber,
                                                 secUser.FirstName,
                                                 secUser.LastName,
+                                                secUser.SecurityUsername,
                                                 secUser.HiredDate,
                                                 RoleName = role.Name
                                             })
@@ -237,6 +238,7 @@ namespace NeoNovaAPI.Controllers
                                                      PhoneNumber = g.First().PhoneNumber,
                                                      FirstName = g.First().FirstName,
                                                      LastName = g.First().LastName,
+                                                     SecurityUsername = g.First().SecurityUsername,
                                                      HiredDate = g.First().HiredDate,
                                                      Roles = g.Select(u => u.RoleName).ToList()
                                                  })
@@ -249,6 +251,60 @@ namespace NeoNovaAPI.Controllers
                 return StatusCode(500, $"Internal server error: {ex}");
             }
         }
+
+        [Authorize(Policy = "SecurityManagement")]
+        [HttpGet("get-security-user/{id}")]
+        public async Task<IActionResult> GetSecurityUserById(string id)
+        {
+            try
+            {
+                var userWithRoles = await (from user in _context.Users
+                                           join secUser in _context.SecurityUsers on user.Id equals secUser.IdentityUserId
+                                           join userRole in _context.UserRoles on user.Id equals userRole.UserId
+                                           join role in _context.Roles on userRole.RoleId equals role.Id
+                                           where user.Id == id
+                                           select new
+                                           {
+                                               user.Id,
+                                               user.UserName,
+                                               user.Email,
+                                               user.PhoneNumber,
+                                               secUser.FirstName,
+                                               secUser.LastName,
+                                               secUser.SecurityUsername,
+                                               secUser.HiredDate,
+                                               RoleName = role.Name
+                                           })
+                                           .ToListAsync();
+
+                if (userWithRoles == null || !userWithRoles.Any())
+                {
+                    return NotFound($"User with ID {id} not found.");
+                }
+
+                var groupedUser = userWithRoles.GroupBy(u => u.Id)
+                                               .Select(g => new
+                                               {
+                                                   Id = g.Key,
+                                                   UserName = g.First().UserName,
+                                                   Email = g.First().Email,
+                                                   PhoneNumber = g.First().PhoneNumber,
+                                                   FirstName = g.First().FirstName,
+                                                   LastName = g.First().LastName,
+                                                   SecurityUsername = g.First().SecurityUsername,
+                                                   HiredDate = g.First().HiredDate,
+                                                   Roles = g.Select(u => u.RoleName).ToList()
+                                               })
+                                               .First();
+
+                return Ok(groupedUser);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex}");
+            }
+        }
+
 
         // Authorized only for Security Management
         [Authorize(Policy = "SecurityManagement")]
@@ -327,7 +383,6 @@ namespace NeoNovaAPI.Controllers
                 }
 
                 // Update Identity User details
-                identityUser.UserName = updateDto.UserName;
                 identityUser.Email = updateDto.Email;
                 identityUser.PhoneNumber = updateDto.PhoneNumber;
                 var identityResult = await _userManager.UpdateAsync(identityUser);
@@ -349,6 +404,7 @@ namespace NeoNovaAPI.Controllers
                 // Update Security User details
                 securityUser.FirstName = updateDto.FirstName;
                 securityUser.LastName = updateDto.LastName;
+                securityUser.SecurityUsername = updateDto.SecurityUsername;
                 securityUser.HiredDate = updateDto.HiredDate ?? securityUser.HiredDate;
 
                 _context.SecurityUsers.Update(securityUser);

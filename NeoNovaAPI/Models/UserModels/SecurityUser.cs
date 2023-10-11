@@ -18,6 +18,9 @@ namespace NeoNovaAPI.Models.UserModels
         [MaxLength(50)]
         public string? LastName { get; set; }
 
+        [MaxLength(50)]
+        public string? SecurityUsername { get; set; }
+
         [Required]
         public bool IsActive { get; set; }
 
