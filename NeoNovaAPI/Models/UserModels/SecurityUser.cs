@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using NeoNovaAPI.Models.SecurityModels.Reporting;
 
 namespace NeoNovaAPI.Models.UserModels
 {
@@ -35,5 +36,6 @@ namespace NeoNovaAPI.Models.UserModels
         public string? IdentityUserId { get; set; }
 
         public IdentityUser IdentityUser { get; set; }
+        public ICollection<ActivityLog> ActivityLogs { get; set; }
     }
 }

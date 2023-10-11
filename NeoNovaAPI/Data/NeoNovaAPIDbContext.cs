@@ -43,6 +43,7 @@ namespace NeoNovaAPI.Data
         public DbSet<Note> Notes { get; set; } = default!;
         public DbSet<Shift> Shifts { get; set; }
         public DbSet<Tour> Tours { get; set; }
+        public DbSet<ActivityLog> ActivityLogs { get; set; }
 
         // Loyalty DB Sets
         public DbSet<LoyaltyProgram> LoyaltyPrograms { get; set; } = default!;
