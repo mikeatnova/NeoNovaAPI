@@ -22,6 +22,8 @@ namespace NeoNovaAPI.Models.SecurityModels.CameraManagement
         [MaxLength(20)]
         public string State { get; set; }
 
+        public DateTime? NextCheckDate { get; set; } = DateTime.UtcNow.AddDays(30);
+
         public List<CameraLocation>? CameraLocations { get; set; }
 
         [Required]
