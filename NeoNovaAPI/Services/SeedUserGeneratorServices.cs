@@ -44,7 +44,7 @@ namespace NeoNovaAPI.Services
 
         public string SeedUsernameGenerator(string role)
         {
-            return $"{role}Agent{_random.Next(000001, 999999)}";
+            return $"{role}{_random.Next(000001, 999999)}";
         }
     }
 }
