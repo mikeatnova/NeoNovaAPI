@@ -252,7 +252,7 @@ namespace NeoNovaAPI.Controllers
             }
         }
 
-        [Authorize(Policy = "SecurityManagement")]
+        [Authorize(Policy = "SecurityTeam")]
         [HttpGet("get-security-user/{id}")]
         public async Task<IActionResult> GetSecurityUserById(string id)
         {
