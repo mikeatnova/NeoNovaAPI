@@ -49,6 +49,10 @@ namespace NeoNovaAPI.Services
 
                 if (securityUser != null)
                 {
+                    if (!string.IsNullOrEmpty(securityUser.ID))
+                    {
+                        claims.Add(new Claim("ID", securityUser.ID));
+                    }
                     if (!string.IsNullOrEmpty(securityUser.FirstName))
                     {
                         claims.Add(new Claim("FirstName", securityUser.FirstName));
