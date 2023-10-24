@@ -305,7 +305,6 @@ namespace NeoNovaAPI.Controllers
             }
         }
 
-
         // Authorized only for Security Management
         [Authorize(Policy = "SecurityManagement")]
         [HttpPost("seed-new-security-user")]
@@ -367,7 +366,6 @@ namespace NeoNovaAPI.Controllers
         {
             return role == "SecurityOfficer" || role == "SecurityManager" || role == "SecuritySupervisor" || role == "SecurityChief";
         }
-
 
         [Authorize(Policy = "SecurityManagement")]
         [HttpPut("update-security-user")]
